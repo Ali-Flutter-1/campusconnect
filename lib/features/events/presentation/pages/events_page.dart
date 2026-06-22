@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../core/animations/fade_slide_in.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_surfaces.dart';
 import '../../../../core/theme/app_typography.dart';
@@ -12,6 +13,7 @@ import '../../../../core/widgets/error_view.dart';
 import '../../../../core/widgets/filter_pill.dart';
 import '../../../../injection.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../domain/entities/event.dart';
 import '../bloc/events_bloc.dart';
 import '../widgets/create_event_sheet.dart';
 import '../widgets/event_card.dart';
@@ -174,27 +176,64 @@ class _Body extends StatelessWidget {
         final bloc = context.read<EventsBloc>();
         return RefreshIndicator(
           onRefresh: () async => bloc.add(const EventsRefreshRequested()),
-          child: ListView.separated(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.lg,
-              AppSpacing.md,
-              AppSpacing.lg,
-              AppSpacing.xxl,
-            ),
-            itemCount: state.events.length,
-            separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.md),
-            itemBuilder: (context, index) {
-              final e = state.events[index];
-              return FadeSlideIn(
-                index: index,
-                child: EventCard(
-                  event: e,
-                  onDelete: isAdmin ? () => bloc.add(EventDeleted(e.id)) : null,
-                ),
-              );
+          child: NotificationListener<ScrollNotification>(
+            onNotification: (n) {
+              if (n.metrics.pixels >= n.metrics.maxScrollExtent - 300) {
+                bloc.add(const EventsLoadMoreRequested());
+              }
+              return false;
             },
+            child: ListView.separated(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg,
+                AppSpacing.md,
+                AppSpacing.lg,
+                AppSpacing.xxl,
+              ),
+              itemCount: state.events.length + (state.isLoadingMore ? 1 : 0),
+              separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.md),
+              itemBuilder: (context, index) {
+                if (index >= state.events.length) {
+                  return const Padding(
+                    padding: EdgeInsets.all(AppSpacing.md),
+                    child: Center(
+                      child: SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    ),
+                  );
+                }
+                final e = state.events[index];
+                return FadeSlideIn(
+                  index: index < AppConstants.pageSize ? index : 0,
+                  child: EventCard(
+                    event: e,
+                    onEdit: isAdmin ? () => _onEdit(context, bloc, e) : null,
+                    onDelete:
+                        isAdmin ? () => bloc.add(EventDeleted(e.id)) : null,
+                  ),
+                );
+              },
+            ),
           ),
         );
+    }
+  }
+
+  Future<void> _onEdit(BuildContext context, EventsBloc bloc, Event e) async {
+    final result = await CreateEventSheet.show(context, initial: e);
+    if (result != null) {
+      bloc.add(EventUpdated(
+        id: e.id,
+        title: result.title,
+        description: result.description,
+        date: result.date,
+        time: result.time,
+        location: result.location,
+        category: result.category,
+      ));
     }
   }
 }

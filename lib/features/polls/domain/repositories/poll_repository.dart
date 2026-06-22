@@ -17,4 +17,10 @@ abstract interface class PollRepository {
     required String pollId,
     required int optionIndex,
   });
+
+  /// Admin-only: creates a poll from a question and a list of option labels.
+  Future<Either<Failure, Poll>> createPoll({
+    required String question,
+    required List<String> options,
+  });
 }

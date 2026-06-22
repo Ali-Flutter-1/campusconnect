@@ -27,6 +27,18 @@ class EventModel extends Event {
     );
   }
 
+  /// Full row shape (snake_case) for caching; round-trips through [fromJson].
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'title': title,
+        'description': description,
+        'date': date.toUtc().toIso8601String(),
+        'time': time,
+        'location': location,
+        'category': category,
+        'image_url': imageUrl,
+      };
+
   /// Fields written when an admin creates an event.
   static Map<String, dynamic> toInsert({
     required String title,

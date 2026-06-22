@@ -7,17 +7,41 @@ import '../../../../core/error/failures.dart';
 import '../../../../core/network/network_info.dart';
 import '../../domain/entities/event.dart';
 import '../../domain/repositories/event_repository.dart';
+import '../datasources/event_local_data_source.dart';
 import '../datasources/event_remote_data_source.dart';
 
 class EventRepositoryImpl implements EventRepository {
-  const EventRepositoryImpl(this._remote, this._networkInfo);
+  const EventRepositoryImpl(this._remote, this._local, this._networkInfo);
 
   final EventRemoteDataSource _remote;
+  final EventLocalDataSource _local;
   final NetworkInfo _networkInfo;
 
   @override
-  Future<Either<Failure, List<Event>>> getEvents({String? category}) =>
-      _guard(() => _remote.getEvents(category: category));
+  List<Event> getCachedEvents(String category) => _local.getCached(category);
+
+  @override
+  Future<Either<Failure, List<Event>>> getEvents({
+    String? category,
+    int limit = 20,
+    int offset = 0,
+  }) async {
+    final cat = category ?? 'all';
+    if (!await _networkInfo.isConnected) {
+      final cached = _local.getCached(cat);
+      return offset == 0 && cached.isNotEmpty
+          ? Right(cached)
+          : const Left(NetworkFailure());
+    }
+    try {
+      final items =
+          await _remote.getEvents(category: category, limit: limit, offset: offset);
+      if (offset == 0) await _local.cache(cat, items);
+      return Right(items);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
 
   @override
   Future<Either<Failure, Event>> createEvent({
@@ -39,6 +63,26 @@ class EventRepositoryImpl implements EventRepository {
             category: category,
             imageBytes: imageBytes,
             imageExt: imageExt,
+          ));
+
+  @override
+  Future<Either<Failure, Event>> updateEvent({
+    required String id,
+    required String title,
+    required String description,
+    required DateTime date,
+    required String time,
+    required String location,
+    required String category,
+  }) =>
+      _guard(() => _remote.updateEvent(
+            id: id,
+            title: title,
+            description: description,
+            date: date,
+            time: time,
+            location: location,
+            category: category,
           ));
 
   @override

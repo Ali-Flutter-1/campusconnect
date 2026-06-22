@@ -17,6 +17,11 @@ class AnnouncementsRefreshRequested extends AnnouncementsEvent {
   const AnnouncementsRefreshRequested();
 }
 
+/// Load the next page (infinite scroll).
+class AnnouncementsLoadMoreRequested extends AnnouncementsEvent {
+  const AnnouncementsLoadMoreRequested();
+}
+
 class AnnouncementLikeToggled extends AnnouncementsEvent {
   const AnnouncementLikeToggled(this.id);
   final String id;
@@ -57,6 +62,24 @@ class AnnouncementCreated extends AnnouncementsEvent {
 }
 
 /// Admin-only: delete an announcement.
+/// Admin-only: edit an existing announcement's text fields.
+class AnnouncementUpdated extends AnnouncementsEvent {
+  const AnnouncementUpdated({
+    required this.id,
+    required this.title,
+    required this.content,
+    required this.category,
+  });
+
+  final String id;
+  final String title;
+  final String content;
+  final String category;
+
+  @override
+  List<Object?> get props => [id, title, content, category];
+}
+
 class AnnouncementDeleted extends AnnouncementsEvent {
   const AnnouncementDeleted(this.id);
   final String id;

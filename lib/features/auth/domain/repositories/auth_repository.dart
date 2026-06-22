@@ -26,4 +26,12 @@ abstract interface class AuthRepository {
   });
 
   Future<Either<Failure, Unit>> signOut();
+
+  /// Updates the signed-in user's profile fields and returns the fresh user.
+  Future<Either<Failure, AppUser>> updateProfile({
+    String? fullName,
+    String? course,
+    String? department,
+    String? year,
+  });
 }

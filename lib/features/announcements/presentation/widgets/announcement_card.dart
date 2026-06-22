@@ -22,6 +22,7 @@ class AnnouncementCard extends StatelessWidget {
     required this.isBookmarked,
     required this.onLike,
     required this.onBookmark,
+    this.onEdit,
     this.onDelete,
   });
 
@@ -30,6 +31,7 @@ class AnnouncementCard extends StatelessWidget {
   final bool isBookmarked;
   final VoidCallback onLike;
   final VoidCallback onBookmark;
+  final VoidCallback? onEdit;
   final VoidCallback? onDelete;
 
   @override
@@ -54,6 +56,14 @@ class AnnouncementCard extends StatelessWidget {
                   color: surfaces.secondaryText,
                 ),
               ),
+              if (onEdit != null)
+                IconButton(
+                  visualDensity: VisualDensity.compact,
+                  icon: Icon(LucideIcons.pencil,
+                      size: 15, color: surfaces.secondaryText),
+                  onPressed: onEdit,
+                  tooltip: 'Edit',
+                ),
               if (onDelete != null)
                 _DeleteButton(onDelete: onDelete!, color: surfaces.secondaryText),
             ],

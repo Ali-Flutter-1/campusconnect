@@ -51,3 +51,21 @@ class AuthSignUpRequested extends AuthEvent {
 class AuthSignOutRequested extends AuthEvent {
   const AuthSignOutRequested();
 }
+
+/// Update editable profile fields (name, course, department, year).
+class AuthProfileUpdateRequested extends AuthEvent {
+  const AuthProfileUpdateRequested({
+    this.fullName,
+    this.course,
+    this.department,
+    this.year,
+  });
+
+  final String? fullName;
+  final String? course;
+  final String? department;
+  final String? year;
+
+  @override
+  List<Object?> get props => [fullName, course, department, year];
+}

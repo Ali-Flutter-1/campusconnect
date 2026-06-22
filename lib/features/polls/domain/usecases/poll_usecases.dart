@@ -54,3 +54,23 @@ class CastVote implements UseCase<Unit, VoteParams> {
         optionIndex: params.optionIndex,
       );
 }
+
+class CreatePollParams extends Equatable {
+  const CreatePollParams({required this.question, required this.options});
+  final String question;
+  final List<String> options;
+
+  @override
+  List<Object?> get props => [question, options];
+}
+
+/// Admin-only: creates a poll.
+class CreatePoll implements UseCase<Poll, CreatePollParams> {
+  const CreatePoll(this._repository);
+
+  final PollRepository _repository;
+
+  @override
+  Future<Either<Failure, Poll>> call(CreatePollParams params) =>
+      _repository.createPoll(question: params.question, options: params.options);
+}

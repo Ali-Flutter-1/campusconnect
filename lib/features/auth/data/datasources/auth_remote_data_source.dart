@@ -20,6 +20,12 @@ abstract interface class AuthRemoteDataSource {
     String? adminCode,
   });
   Future<void> signOut();
+  Future<AppUserModel> updateProfile({
+    String? fullName,
+    String? course,
+    String? department,
+    String? year,
+  });
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -108,6 +114,33 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   @override
   Future<void> signOut() => _client.auth.signOut();
+
+  @override
+  Future<AppUserModel> updateProfile({
+    String? fullName,
+    String? course,
+    String? department,
+    String? year,
+  }) async {
+    final user = _client.auth.currentUser;
+    if (user == null) throw const AuthException();
+    try {
+      final updates = <String, dynamic>{
+        'full_name': ?fullName,
+        'course': ?course,
+        'department': ?department,
+        'year': ?year,
+      };
+      if (updates.isNotEmpty) {
+        await _client.from('profiles').update(updates).eq('id', user.id);
+      }
+      return _loadProfile(user.id, user.email);
+    } on AuthException {
+      rethrow;
+    } catch (_) {
+      throw const ServerException();
+    }
+  }
 
   /// Loads the `profiles` row for [userId], creating a default student profile
   /// if one does not yet exist.

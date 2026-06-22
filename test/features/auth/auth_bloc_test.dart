@@ -7,6 +7,7 @@ import 'package:connect/features/auth/domain/usecases/get_current_user.dart';
 import 'package:connect/features/auth/domain/usecases/sign_in.dart';
 import 'package:connect/features/auth/domain/usecases/sign_out.dart';
 import 'package:connect/features/auth/domain/usecases/sign_up.dart';
+import 'package:connect/features/auth/domain/usecases/update_profile.dart';
 import 'package:connect/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -22,12 +23,15 @@ class _MockSignOut extends Mock implements SignOut {}
 
 class _MockGetCurrentUser extends Mock implements GetCurrentUser {}
 
+class _MockUpdateProfile extends Mock implements UpdateProfile {}
+
 void main() {
   late _MockAuthRepository repository;
   late _MockSignIn signIn;
   late _MockSignUp signUp;
   late _MockSignOut signOut;
   late _MockGetCurrentUser getCurrentUser;
+  late _MockUpdateProfile updateProfile;
 
   const admin = AppUser(id: 'a1', email: 'a@x.io', role: UserRole.admin);
 
@@ -42,6 +46,7 @@ void main() {
     signUp = _MockSignUp();
     signOut = _MockSignOut();
     getCurrentUser = _MockGetCurrentUser();
+    updateProfile = _MockUpdateProfile();
     when(() => repository.authStateChanges)
         .thenAnswer((_) => const Stream<AppUser?>.empty());
   });
@@ -52,6 +57,7 @@ void main() {
         signUp: signUp,
         signOut: signOut,
         getCurrentUser: getCurrentUser,
+        updateProfile: updateProfile,
       );
 
   test('subscription with no session resolves to unauthenticated', () async {

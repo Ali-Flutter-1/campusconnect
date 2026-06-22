@@ -8,13 +8,19 @@ import 'package:mocktail/mocktail.dart';
 
 class _MockGetEvents extends Mock implements GetEvents {}
 
+class _MockGetCachedEvents extends Mock implements GetCachedEvents {}
+
 class _MockCreateEvent extends Mock implements CreateEvent {}
+
+class _MockUpdateEvent extends Mock implements UpdateEvent {}
 
 class _MockDeleteEvent extends Mock implements DeleteEvent {}
 
 void main() {
   late _MockGetEvents getEvents;
+  late _MockGetCachedEvents getCachedEvents;
   late _MockCreateEvent createEvent;
+  late _MockUpdateEvent updateEvent;
   late _MockDeleteEvent deleteEvent;
 
   final event = Event(
@@ -27,15 +33,22 @@ void main() {
     category: 'academic',
   );
 
+  setUpAll(() => registerFallbackValue(const GetEventsParams()));
+
   setUp(() {
     getEvents = _MockGetEvents();
+    getCachedEvents = _MockGetCachedEvents();
     createEvent = _MockCreateEvent();
+    updateEvent = _MockUpdateEvent();
     deleteEvent = _MockDeleteEvent();
+    when(() => getCachedEvents(any())).thenReturn(const []);
   });
 
   EventsBloc build() => EventsBloc(
         getEvents: getEvents,
+        getCachedEvents: getCachedEvents,
         createEvent: createEvent,
+        updateEvent: updateEvent,
         deleteEvent: deleteEvent,
       );
 

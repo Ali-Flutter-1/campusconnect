@@ -6,6 +6,7 @@ import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_text_field.dart';
 import '../../../../core/widgets/image_picker_field.dart';
+import '../../domain/entities/announcement.dart';
 
 /// The result of the admin "new announcement" form.
 class NewAnnouncement {
@@ -24,9 +25,15 @@ class NewAnnouncement {
 /// Admin-only modal sheet to compose an announcement. Returns a
 /// [NewAnnouncement] via `Navigator.pop` when submitted.
 class CreateAnnouncementSheet extends StatefulWidget {
-  const CreateAnnouncementSheet({super.key});
+  const CreateAnnouncementSheet({super.key, this.initial});
 
-  static Future<NewAnnouncement?> show(BuildContext context) {
+  /// When set, the sheet edits an existing announcement instead of creating one.
+  final Announcement? initial;
+
+  static Future<NewAnnouncement?> show(
+    BuildContext context, {
+    Announcement? initial,
+  }) {
     return showModalBottomSheet<NewAnnouncement>(
       context: context,
       isScrollControlled: true,
@@ -34,7 +41,7 @@ class CreateAnnouncementSheet extends StatefulWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (_) => const CreateAnnouncementSheet(),
+      builder: (_) => CreateAnnouncementSheet(initial: initial),
     );
   }
 
@@ -45,10 +52,14 @@ class CreateAnnouncementSheet extends StatefulWidget {
 
 class _CreateAnnouncementSheetState extends State<CreateAnnouncementSheet> {
   final _formKey = GlobalKey<FormState>();
-  final _title = TextEditingController();
-  final _content = TextEditingController();
-  String _category = 'general';
+  late final _title =
+      TextEditingController(text: widget.initial?.title ?? '');
+  late final _content =
+      TextEditingController(text: widget.initial?.content ?? '');
+  late String _category = widget.initial?.category ?? 'general';
   PickedImage? _image;
+
+  bool get _isEditing => widget.initial != null;
 
   static const _categories = ['general', 'academic', 'urgent', 'event'];
 
@@ -88,7 +99,7 @@ class _CreateAnnouncementSheetState extends State<CreateAnnouncementSheet> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              'New announcement',
+              _isEditing ? 'Edit announcement' : 'New announcement',
               style: AppTypography.inter(
                 size: AppTypography.lg,
                 weight: AppTypography.bold,
@@ -108,12 +119,16 @@ class _CreateAnnouncementSheetState extends State<CreateAnnouncementSheet> {
               controller: _content,
               label: 'Content',
               hint: 'Details…',
+              maxLines: 3,
               validator: (v) =>
                   (v == null || v.trim().isEmpty) ? 'Content required' : null,
             ),
             const SizedBox(height: AppSpacing.md),
-            ImagePickerField(onChanged: (img) => _image = img),
-            const SizedBox(height: AppSpacing.md),
+            // Image upload is only offered when creating (edit keeps the image).
+            if (!_isEditing) ...[
+              ImagePickerField(onChanged: (img) => _image = img),
+              const SizedBox(height: AppSpacing.md),
+            ],
             Align(
               alignment: Alignment.centerLeft,
               child: Text(
@@ -138,7 +153,11 @@ class _CreateAnnouncementSheetState extends State<CreateAnnouncementSheet> {
               ],
             ),
             const SizedBox(height: AppSpacing.lg),
-            AppButton(label: 'Publish', expand: true, onPressed: _submit),
+            AppButton(
+              label: _isEditing ? 'Save changes' : 'Publish',
+              expand: true,
+              onPressed: _submit,
+            ),
           ],
         ),
       ),

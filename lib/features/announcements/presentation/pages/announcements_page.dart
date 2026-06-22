@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../core/animations/fade_slide_in.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/app_loader.dart';
@@ -10,6 +11,7 @@ import '../../../../core/widgets/empty_state.dart';
 import '../../../../core/widgets/error_view.dart';
 import '../../../../injection.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../domain/entities/announcement.dart';
 import '../bloc/announcements_bloc.dart';
 import '../widgets/announcement_card.dart';
 import '../widgets/create_announcement_sheet.dart';
@@ -128,33 +130,73 @@ class _List extends StatelessWidget {
       },
       child: BlocBuilder<AnnouncementsBloc, AnnouncementsState>(
         builder: (context, state) {
-          return ListView.separated(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.lg,
-              AppSpacing.md,
-              AppSpacing.lg,
-              AppSpacing.xxl,
-            ),
-            itemCount: state.announcements.length,
-            separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.md),
-            itemBuilder: (context, index) {
-              final a = state.announcements[index];
-              return FadeSlideIn(
-                index: index,
-                child: AnnouncementCard(
-                  announcement: a,
-                  isLiked: state.isLiked(a.id),
-                  isBookmarked: state.isBookmarked(a.id),
-                  onLike: () => bloc.add(AnnouncementLikeToggled(a.id)),
-                  onBookmark: () => bloc.add(AnnouncementBookmarkToggled(a.id)),
-                  onDelete:
-                      isAdmin ? () => bloc.add(AnnouncementDeleted(a.id)) : null,
-                ),
-              );
+          return NotificationListener<ScrollNotification>(
+            onNotification: (n) {
+              if (n.metrics.pixels >= n.metrics.maxScrollExtent - 300) {
+                bloc.add(const AnnouncementsLoadMoreRequested());
+              }
+              return false;
             },
+            child: ListView.separated(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg,
+                AppSpacing.md,
+                AppSpacing.lg,
+                AppSpacing.xxl,
+              ),
+              itemCount:
+                  state.announcements.length + (state.isLoadingMore ? 1 : 0),
+              separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.md),
+              itemBuilder: (context, index) {
+                if (index >= state.announcements.length) {
+                  return const Padding(
+                    padding: EdgeInsets.all(AppSpacing.md),
+                    child: Center(
+                      child: SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    ),
+                  );
+                }
+                final a = state.announcements[index];
+                return FadeSlideIn(
+                  index: index < AppConstants.pageSize ? index : 0,
+                  child: AnnouncementCard(
+                    announcement: a,
+                    isLiked: state.isLiked(a.id),
+                    isBookmarked: state.isBookmarked(a.id),
+                    onLike: () => bloc.add(AnnouncementLikeToggled(a.id)),
+                    onBookmark: () =>
+                        bloc.add(AnnouncementBookmarkToggled(a.id)),
+                    onEdit: isAdmin ? () => _onEdit(context, bloc, a) : null,
+                    onDelete: isAdmin
+                        ? () => bloc.add(AnnouncementDeleted(a.id))
+                        : null,
+                  ),
+                );
+              },
+            ),
           );
         },
       ),
     );
+  }
+
+  Future<void> _onEdit(
+    BuildContext context,
+    AnnouncementsBloc bloc,
+    Announcement a,
+  ) async {
+    final result = await CreateAnnouncementSheet.show(context, initial: a);
+    if (result != null) {
+      bloc.add(AnnouncementUpdated(
+        id: a.id,
+        title: result.title,
+        content: result.content,
+        category: result.category,
+      ));
+    }
   }
 }

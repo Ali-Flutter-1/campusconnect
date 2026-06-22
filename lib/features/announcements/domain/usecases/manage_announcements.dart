@@ -49,6 +49,40 @@ class CreateAnnouncement
       );
 }
 
+class UpdateAnnouncementParams extends Equatable {
+  const UpdateAnnouncementParams({
+    required this.id,
+    required this.title,
+    required this.content,
+    required this.category,
+  });
+
+  final String id;
+  final String title;
+  final String content;
+  final String category;
+
+  @override
+  List<Object?> get props => [id, title, content, category];
+}
+
+/// Admin-only: edits an announcement's text fields.
+class UpdateAnnouncement
+    implements UseCase<Announcement, UpdateAnnouncementParams> {
+  const UpdateAnnouncement(this._repository);
+
+  final AnnouncementRepository _repository;
+
+  @override
+  Future<Either<Failure, Announcement>> call(UpdateAnnouncementParams params) =>
+      _repository.updateAnnouncement(
+        id: params.id,
+        title: params.title,
+        content: params.content,
+        category: params.category,
+      );
+}
+
 /// Admin-only: removes an announcement.
 class DeleteAnnouncement implements UseCase<Unit, String> {
   const DeleteAnnouncement(this._repository);

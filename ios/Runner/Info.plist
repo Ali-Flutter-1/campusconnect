@@ -45,5 +45,9 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>CampusConnect needs access to your photos so admins can attach an image to announcements and events.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>CampusConnect needs camera access to take a photo for announcements and events.</string>
 </dict>
 </plist>

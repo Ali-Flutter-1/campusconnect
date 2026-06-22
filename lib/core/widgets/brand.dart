@@ -88,7 +88,11 @@ class BrandGradient extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
+    // Expand to fill the whole screen — otherwise the gradient would only cover
+    // the width of its (narrow, centered) child, leaving the sides blank.
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,

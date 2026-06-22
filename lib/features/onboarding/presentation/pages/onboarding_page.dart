@@ -55,8 +55,25 @@ class OnboardingPage extends StatelessWidget {
                     letterSpacing: 1,
                   ),
                 ),
-                const SizedBox(height: AppSpacing.md),
-                _GetStartedButton(onTap: () => context.go(AppRoutes.login))
+                const SizedBox(height: AppSpacing.lg),
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 360),
+                  child: Column(
+                    children: [
+                      _PillButton(
+                        label: 'Sign In',
+                        filled: true,
+                        onTap: () => context.push(AppRoutes.login),
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      _PillButton(
+                        label: 'Create Account',
+                        filled: false,
+                        onTap: () => context.push(AppRoutes.register),
+                      ),
+                    ],
+                  ),
+                )
                     .animate(delay: 450.ms)
                     .fadeIn(duration: 400.ms)
                     .moveY(begin: 16, end: 0),
@@ -70,30 +87,43 @@ class OnboardingPage extends StatelessWidget {
   }
 }
 
-class _GetStartedButton extends StatelessWidget {
-  const _GetStartedButton({required this.onTap});
+/// Pill button used on the onboarding screen — filled (primary) or outlined.
+class _PillButton extends StatelessWidget {
+  const _PillButton({
+    required this.label,
+    required this.filled,
+    required this.onTap,
+  });
 
+  final String label;
+  final bool filled;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: AppColors.primary.s500,
+      color: filled ? AppColors.primary.s500 : Colors.transparent,
       borderRadius: BorderRadius.circular(AppRadius.full),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppRadius.full),
         child: Container(
-          width: 220,
+          width: double.infinity,
           alignment: Alignment.center,
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppRadius.full),
+            border: filled
+                ? null
+                : Border.all(color: AppColors.white.withValues(alpha: 0.3)),
+          ),
           child: Text(
-            'GET STARTED',
+            label,
             style: AppTypography.inter(
               size: AppTypography.base,
               weight: AppTypography.bold,
               color: AppColors.white,
-              letterSpacing: 1,
+              letterSpacing: 0.5,
             ),
           ),
         ),

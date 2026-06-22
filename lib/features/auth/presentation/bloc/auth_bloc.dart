@@ -10,6 +10,7 @@ import '../../domain/usecases/get_current_user.dart';
 import '../../domain/usecases/sign_in.dart';
 import '../../domain/usecases/sign_out.dart';
 import '../../domain/usecases/sign_up.dart';
+import '../../domain/usecases/update_profile.dart';
 
 part 'auth_event.dart';
 part 'auth_state.dart';
@@ -24,17 +25,20 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     required SignUp signUp,
     required SignOut signOut,
     required GetCurrentUser getCurrentUser,
+    required UpdateProfile updateProfile,
   })  : _repository = repository,
         _signIn = signIn,
         _signUp = signUp,
         _signOut = signOut,
         _getCurrentUser = getCurrentUser,
+        _updateProfile = updateProfile,
         super(const AuthState()) {
     on<AuthSubscriptionRequested>(_onSubscriptionRequested);
     on<_AuthUserChanged>(_onUserChanged);
     on<AuthSignInRequested>(_onSignInRequested);
     on<AuthSignUpRequested>(_onSignUpRequested);
     on<AuthSignOutRequested>(_onSignOutRequested);
+    on<AuthProfileUpdateRequested>(_onProfileUpdateRequested);
   }
 
   final AuthRepository _repository;
@@ -42,6 +46,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final SignUp _signUp;
   final SignOut _signOut;
   final GetCurrentUser _getCurrentUser;
+  final UpdateProfile _updateProfile;
 
   StreamSubscription<AppUser?>? _sub;
 
@@ -112,6 +117,31 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(state.copyWith(isSubmitting: true));
     await _signOut(const NoParams());
     emit(const AuthState(status: AuthStatus.unauthenticated));
+  }
+
+  Future<void> _onProfileUpdateRequested(
+    AuthProfileUpdateRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(state.copyWith(isSubmitting: true, clearError: true));
+    final result = await _updateProfile(UpdateProfileParams(
+      fullName: event.fullName,
+      course: event.course,
+      department: event.department,
+      year: event.year,
+    ));
+    result.fold(
+      (failure) => emit(state.copyWith(
+        isSubmitting: false,
+        errorMessage: failure.message,
+      )),
+      (user) => emit(state.copyWith(
+        status: AuthStatus.authenticated,
+        user: user,
+        isSubmitting: false,
+        clearError: true,
+      )),
+    );
   }
 
   AuthState _resolved(AppUser? user) {

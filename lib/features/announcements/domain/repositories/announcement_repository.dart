@@ -8,7 +8,13 @@ import '../entities/announcement.dart';
 /// Contract for reading announcements and the user's interactions with them,
 /// plus admin-only create/delete. Implemented in the data layer.
 abstract interface class AnnouncementRepository {
-  Future<Either<Failure, List<Announcement>>> getAnnouncements();
+  Future<Either<Failure, List<Announcement>>> getAnnouncements({
+    int limit,
+    int offset,
+  });
+
+  /// Instantly-available cached first page (empty if nothing cached yet).
+  List<Announcement> getCachedAnnouncements();
 
   /// The signed-in user's liked/bookmarked announcement ids (empty when
   /// signed out).
@@ -32,6 +38,13 @@ abstract interface class AnnouncementRepository {
     required String author,
     Uint8List? imageBytes,
     String? imageExt,
+  });
+
+  Future<Either<Failure, Announcement>> updateAnnouncement({
+    required String id,
+    required String title,
+    required String content,
+    required String category,
   });
 
   Future<Either<Failure, Unit>> deleteAnnouncement(String announcementId);

@@ -31,6 +31,13 @@ class PollRepositoryImpl implements PollRepository {
         return unit;
       });
 
+  @override
+  Future<Either<Failure, Poll>> createPoll({
+    required String question,
+    required List<String> options,
+  }) =>
+      _guard(() => _remote.createPoll(question: question, options: options));
+
   Future<Either<Failure, T>> _guard<T>(Future<T> Function() action) async {
     if (!await _networkInfo.isConnected) return const Left(NetworkFailure());
     try {

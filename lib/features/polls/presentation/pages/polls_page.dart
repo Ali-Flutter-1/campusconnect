@@ -9,7 +9,9 @@ import '../../../../core/widgets/app_loader.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../../../core/widgets/error_view.dart';
 import '../../../../injection.dart';
+import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../bloc/polls_bloc.dart';
+import '../widgets/create_poll_sheet.dart';
 import '../widgets/poll_card.dart';
 
 /// Polls screen — list active polls, vote once, see live percentages.
@@ -20,8 +22,17 @@ class PollsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider<PollsBloc>(
       create: (_) => getIt<PollsBloc>()..add(const PollsLoadRequested()),
-      child: Scaffold(
-        appBar: AppBar(
+      child: Builder(
+        builder: (context) {
+          final isAdmin = context.select<AuthBloc, bool>((b) => b.state.isAdmin);
+          return Scaffold(
+            floatingActionButton: isAdmin
+                ? FloatingActionButton(
+                    onPressed: () => _onCreate(context),
+                    child: const Icon(LucideIcons.plus),
+                  )
+                : null,
+            appBar: AppBar(
           title: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -99,7 +110,17 @@ class PollsPage extends StatelessWidget {
             }
           },
         ),
+          );
+        },
       ),
     );
+  }
+
+  Future<void> _onCreate(BuildContext context) async {
+    final bloc = context.read<PollsBloc>();
+    final result = await CreatePollSheet.show(context);
+    if (result != null) {
+      bloc.add(PollCreated(question: result.question, options: result.options));
+    }
   }
 }

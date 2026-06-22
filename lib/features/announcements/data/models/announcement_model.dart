@@ -30,6 +30,19 @@ class AnnouncementModel extends Announcement {
     );
   }
 
+  /// Full row shape (snake_case) for caching; round-trips through [fromJson].
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'title': title,
+        'content': content,
+        'author': author,
+        'category': category,
+        'likes': likes,
+        'bookmarks': bookmarks,
+        'created_at': createdAt.toUtc().toIso8601String(),
+        'image_url': imageUrl,
+      };
+
   /// Fields sent when an admin creates an announcement (counts/id/timestamp are
   /// defaulted by the database).
   static Map<String, dynamic> toInsert({

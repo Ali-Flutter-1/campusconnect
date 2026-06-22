@@ -15,18 +15,22 @@ class PollsBloc extends Bloc<PollsEvent, PollsState> {
     required GetPolls getPolls,
     required GetUserVotes getUserVotes,
     required CastVote castVote,
+    required CreatePoll createPoll,
   })  : _getPolls = getPolls,
         _getUserVotes = getUserVotes,
         _castVote = castVote,
+        _createPoll = createPoll,
         super(const PollsState()) {
     on<PollsLoadRequested>(_onLoad);
     on<PollsRefreshRequested>(_onRefresh);
     on<PollVoteCast>(_onVote);
+    on<PollCreated>(_onCreated);
   }
 
   final GetPolls _getPolls;
   final GetUserVotes _getUserVotes;
   final CastVote _castVote;
+  final CreatePoll _createPoll;
 
   Future<void> _onLoad(PollsLoadRequested event, Emitter<PollsState> emit) async {
     emit(state.copyWith(status: PollsStatus.loading, clearError: true));
@@ -89,6 +93,16 @@ class PollsBloc extends Bloc<PollsEvent, PollsState> {
     result.fold(
       (failure) => emit(previous.copyWith(errorMessage: failure.message)),
       (_) {},
+    );
+  }
+
+  Future<void> _onCreated(PollCreated event, Emitter<PollsState> emit) async {
+    final result = await _createPoll(
+      CreatePollParams(question: event.question, options: event.options),
+    );
+    result.fold(
+      (failure) => emit(state.copyWith(errorMessage: failure.message)),
+      (created) => emit(state.copyWith(polls: [created, ...state.polls])),
     );
   }
 }

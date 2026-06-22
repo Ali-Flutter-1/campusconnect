@@ -1,7 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 
-import '../../../../core/usecases/usecase.dart';
 import '../../../announcements/domain/entities/announcement.dart';
 import '../../../announcements/domain/usecases/get_announcements.dart';
 import '../../../events/domain/entities/event.dart';
@@ -36,8 +35,9 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       emit(state.copyWith(status: HomeStatus.loading, clearError: true));
     }
 
-    final announcements = await _getAnnouncements(const NoParams());
-    final events = await _getEvents('all');
+    final announcements =
+        await _getAnnouncements(const GetAnnouncementsParams(limit: 3));
+    final events = await _getEvents(const GetEventsParams(limit: 3));
     final polls = await _getPolls(const GetPollsParams(limit: 2));
 
     // Home is best-effort: if any one section fails we still render the rest.

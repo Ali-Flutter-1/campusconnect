@@ -60,23 +60,22 @@ class _SignupPageState extends State<SignupPage> {
       appBar: AppBar(title: const Text('Create account')),
       body: SafeArea(
         child: BlocListener<AuthBloc, AuthState>(
-          listenWhen: (p, c) =>
-              p.errorMessage != c.errorMessage ||
-              p.status != c.status,
+          // On success the router redirect moves the user to their landing tab,
+          // so we only need to surface errors here.
+          listenWhen: (p, c) => p.errorMessage != c.errorMessage,
           listener: (context, state) {
             if (state.errorMessage != null) {
               ScaffoldMessenger.of(context)
                 ..hideCurrentSnackBar()
                 ..showSnackBar(SnackBar(content: Text(state.errorMessage!)));
             }
-            if (state.status == AuthStatus.authenticated) {
-              Navigator.of(context).pop();
-            }
           },
           child: Center(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(AppSpacing.lg),
-              child: FadeSlideIn(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 440),
+                child: FadeSlideIn(
                 child: Form(
                   key: _formKey,
                   child: Column(
@@ -163,6 +162,7 @@ class _SignupPageState extends State<SignupPage> {
                       ),
                     ],
                   ),
+                ),
                 ),
               ),
             ),

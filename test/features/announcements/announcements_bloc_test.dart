@@ -10,6 +10,9 @@ import 'package:mocktail/mocktail.dart';
 
 class _MockGetAnnouncements extends Mock implements GetAnnouncements {}
 
+class _MockGetCachedAnnouncements extends Mock
+    implements GetCachedAnnouncements {}
+
 class _MockGetInteractions extends Mock implements GetInteractions {}
 
 class _MockToggleLike extends Mock implements ToggleLike {}
@@ -18,14 +21,18 @@ class _MockToggleBookmark extends Mock implements ToggleBookmark {}
 
 class _MockCreateAnnouncement extends Mock implements CreateAnnouncement {}
 
+class _MockUpdateAnnouncement extends Mock implements UpdateAnnouncement {}
+
 class _MockDeleteAnnouncement extends Mock implements DeleteAnnouncement {}
 
 void main() {
   late _MockGetAnnouncements getAnnouncements;
+  late _MockGetCachedAnnouncements getCachedAnnouncements;
   late _MockGetInteractions getInteractions;
   late _MockToggleLike toggleLike;
   late _MockToggleBookmark toggleBookmark;
   late _MockCreateAnnouncement createAnnouncement;
+  late _MockUpdateAnnouncement updateAnnouncement;
   late _MockDeleteAnnouncement deleteAnnouncement;
 
   final announcement = Announcement(
@@ -44,23 +51,29 @@ void main() {
       const ToggleInteractionParams(announcementId: '', active: false),
     );
     registerFallbackValue(const NoParams());
+    registerFallbackValue(const GetAnnouncementsParams());
   });
 
   setUp(() {
     getAnnouncements = _MockGetAnnouncements();
+    getCachedAnnouncements = _MockGetCachedAnnouncements();
     getInteractions = _MockGetInteractions();
     toggleLike = _MockToggleLike();
     toggleBookmark = _MockToggleBookmark();
     createAnnouncement = _MockCreateAnnouncement();
+    updateAnnouncement = _MockUpdateAnnouncement();
     deleteAnnouncement = _MockDeleteAnnouncement();
+    when(() => getCachedAnnouncements()).thenReturn(const []);
   });
 
   AnnouncementsBloc build() => AnnouncementsBloc(
         getAnnouncements: getAnnouncements,
+        getCachedAnnouncements: getCachedAnnouncements,
         getInteractions: getInteractions,
         toggleLike: toggleLike,
         toggleBookmark: toggleBookmark,
         createAnnouncement: createAnnouncement,
+        updateAnnouncement: updateAnnouncement,
         deleteAnnouncement: deleteAnnouncement,
       );
 

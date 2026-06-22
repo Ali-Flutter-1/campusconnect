@@ -23,3 +23,13 @@ class PollVoteCast extends PollsEvent {
   @override
   List<Object?> get props => [pollId, optionIndex];
 }
+
+/// Admin-only: create a poll.
+class PollCreated extends PollsEvent {
+  const PollCreated({required this.question, required this.options});
+  final String question;
+  final List<String> options;
+
+  @override
+  List<Object?> get props => [question, options];
+}

@@ -58,6 +58,20 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
+  @override
+  Future<Either<Failure, AppUser>> updateProfile({
+    String? fullName,
+    String? course,
+    String? department,
+    String? year,
+  }) =>
+      _guarded(() => _remote.updateProfile(
+            fullName: fullName,
+            course: course,
+            department: department,
+            year: year,
+          ));
+
   /// Shared online-check + exception→failure mapping for auth actions.
   Future<Either<Failure, AppUser>> _guarded(
     Future<AppUser> Function() action,

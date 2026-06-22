@@ -31,10 +31,12 @@ class EventCard extends StatelessWidget {
   const EventCard({
     super.key,
     required this.event,
+    this.onEdit,
     this.onDelete,
   });
 
   final Event event;
+  final VoidCallback? onEdit;
   final VoidCallback? onDelete;
 
   @override
@@ -91,6 +93,14 @@ class EventCard extends StatelessWidget {
                   ],
                 ),
               ),
+              if (onEdit != null)
+                IconButton(
+                  visualDensity: VisualDensity.compact,
+                  icon: Icon(LucideIcons.pencil,
+                      size: 15, color: surfaces.secondaryText),
+                  onPressed: onEdit,
+                  tooltip: 'Edit',
+                ),
               if (onDelete != null)
                 IconButton(
                   visualDensity: VisualDensity.compact,

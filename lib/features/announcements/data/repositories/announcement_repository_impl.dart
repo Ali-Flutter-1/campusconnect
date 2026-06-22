@@ -7,17 +7,39 @@ import '../../../../core/error/failures.dart';
 import '../../../../core/network/network_info.dart';
 import '../../domain/entities/announcement.dart';
 import '../../domain/repositories/announcement_repository.dart';
+import '../datasources/announcement_local_data_source.dart';
 import '../datasources/announcement_remote_data_source.dart';
 
 class AnnouncementRepositoryImpl implements AnnouncementRepository {
-  const AnnouncementRepositoryImpl(this._remote, this._networkInfo);
+  const AnnouncementRepositoryImpl(this._remote, this._local, this._networkInfo);
 
   final AnnouncementRemoteDataSource _remote;
+  final AnnouncementLocalDataSource _local;
   final NetworkInfo _networkInfo;
 
   @override
-  Future<Either<Failure, List<Announcement>>> getAnnouncements() =>
-      _guard(_remote.getAnnouncements);
+  List<Announcement> getCachedAnnouncements() => _local.getCached();
+
+  @override
+  Future<Either<Failure, List<Announcement>>> getAnnouncements({
+    int limit = 20,
+    int offset = 0,
+  }) async {
+    if (!await _networkInfo.isConnected) {
+      // Offline: serve the cached first page (if any) rather than erroring.
+      final cached = _local.getCached();
+      return offset == 0 && cached.isNotEmpty
+          ? Right(cached)
+          : const Left(NetworkFailure());
+    }
+    try {
+      final items = await _remote.getAnnouncements(limit: limit, offset: offset);
+      if (offset == 0) await _local.cache(items);
+      return Right(items);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
 
   @override
   Future<Either<Failure, AnnouncementInteractions>> getInteractions() =>
@@ -59,6 +81,20 @@ class AnnouncementRepositoryImpl implements AnnouncementRepository {
             author: author,
             imageBytes: imageBytes,
             imageExt: imageExt,
+          ));
+
+  @override
+  Future<Either<Failure, Announcement>> updateAnnouncement({
+    required String id,
+    required String title,
+    required String content,
+    required String category,
+  }) =>
+      _guard(() => _remote.updateAnnouncement(
+            id: id,
+            title: title,
+            content: content,
+            category: category,
           ));
 
   @override

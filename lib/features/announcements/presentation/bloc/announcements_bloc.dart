@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/usecases/usecase.dart';
 import '../../domain/entities/announcement.dart';
 import '../../domain/usecases/get_announcements.dart';
@@ -17,38 +18,58 @@ part 'announcements_state.dart';
 class AnnouncementsBloc extends Bloc<AnnouncementsEvent, AnnouncementsState> {
   AnnouncementsBloc({
     required GetAnnouncements getAnnouncements,
+    required GetCachedAnnouncements getCachedAnnouncements,
     required GetInteractions getInteractions,
     required ToggleLike toggleLike,
     required ToggleBookmark toggleBookmark,
     required CreateAnnouncement createAnnouncement,
+    required UpdateAnnouncement updateAnnouncement,
     required DeleteAnnouncement deleteAnnouncement,
   })  : _getAnnouncements = getAnnouncements,
+        _getCachedAnnouncements = getCachedAnnouncements,
         _getInteractions = getInteractions,
         _toggleLike = toggleLike,
         _toggleBookmark = toggleBookmark,
         _createAnnouncement = createAnnouncement,
+        _updateAnnouncement = updateAnnouncement,
         _deleteAnnouncement = deleteAnnouncement,
         super(const AnnouncementsState()) {
     on<AnnouncementsLoadRequested>(_onLoad);
     on<AnnouncementsRefreshRequested>(_onRefresh);
+    on<AnnouncementsLoadMoreRequested>(_onLoadMore);
     on<AnnouncementLikeToggled>(_onLikeToggled);
     on<AnnouncementBookmarkToggled>(_onBookmarkToggled);
     on<AnnouncementCreated>(_onCreated);
+    on<AnnouncementUpdated>(_onUpdated);
     on<AnnouncementDeleted>(_onDeleted);
   }
 
   final GetAnnouncements _getAnnouncements;
+  final GetCachedAnnouncements _getCachedAnnouncements;
   final GetInteractions _getInteractions;
   final ToggleLike _toggleLike;
   final ToggleBookmark _toggleBookmark;
   final CreateAnnouncement _createAnnouncement;
+  final UpdateAnnouncement _updateAnnouncement;
   final DeleteAnnouncement _deleteAnnouncement;
 
   Future<void> _onLoad(
     AnnouncementsLoadRequested event,
     Emitter<AnnouncementsState> emit,
   ) async {
-    emit(state.copyWith(status: AnnouncementsStatus.loading, clearError: true));
+    // Cache-first: show the cached page instantly, then refresh from network.
+    final cached = _getCachedAnnouncements();
+    if (cached.isNotEmpty) {
+      emit(state.copyWith(
+        status: AnnouncementsStatus.success,
+        announcements: cached,
+      ));
+    } else {
+      emit(state.copyWith(
+        status: AnnouncementsStatus.loading,
+        clearError: true,
+      ));
+    }
     await _load(emit);
   }
 
@@ -59,7 +80,7 @@ class AnnouncementsBloc extends Bloc<AnnouncementsEvent, AnnouncementsState> {
       _load(emit);
 
   Future<void> _load(Emitter<AnnouncementsState> emit) async {
-    final result = await _getAnnouncements(const NoParams());
+    final result = await _getAnnouncements(const GetAnnouncementsParams());
     await result.fold(
       (failure) async => emit(state.copyWith(
         status: AnnouncementsStatus.failure,
@@ -73,9 +94,32 @@ class AnnouncementsBloc extends Bloc<AnnouncementsEvent, AnnouncementsState> {
           interactions: interactions.getOrElse(
             () => const AnnouncementInteractions(),
           ),
+          hasReachedMax: announcements.length < AppConstants.pageSize,
           clearError: true,
         ));
       },
+    );
+  }
+
+  Future<void> _onLoadMore(
+    AnnouncementsLoadMoreRequested event,
+    Emitter<AnnouncementsState> emit,
+  ) async {
+    if (state.hasReachedMax || state.isLoadingMore) return;
+    emit(state.copyWith(isLoadingMore: true));
+    final result = await _getAnnouncements(
+      GetAnnouncementsParams(offset: state.announcements.length),
+    );
+    result.fold(
+      (failure) => emit(state.copyWith(
+        isLoadingMore: false,
+        errorMessage: failure.message,
+      )),
+      (page) => emit(state.copyWith(
+        announcements: [...state.announcements, ...page],
+        isLoadingMore: false,
+        hasReachedMax: page.length < AppConstants.pageSize,
+      )),
     );
   }
 
@@ -136,6 +180,27 @@ class AnnouncementsBloc extends Bloc<AnnouncementsEvent, AnnouncementsState> {
       (failure) => emit(state.copyWith(errorMessage: failure.message)),
       (created) => emit(state.copyWith(
         announcements: [created, ...state.announcements],
+        clearError: true,
+      )),
+    );
+  }
+
+  Future<void> _onUpdated(
+    AnnouncementUpdated event,
+    Emitter<AnnouncementsState> emit,
+  ) async {
+    final result = await _updateAnnouncement(UpdateAnnouncementParams(
+      id: event.id,
+      title: event.title,
+      content: event.content,
+      category: event.category,
+    ));
+    result.fold(
+      (failure) => emit(state.copyWith(errorMessage: failure.message)),
+      (updated) => emit(state.copyWith(
+        announcements: state.announcements
+            .map((a) => a.id == updated.id ? updated : a)
+            .toList(),
         clearError: true,
       )),
     );

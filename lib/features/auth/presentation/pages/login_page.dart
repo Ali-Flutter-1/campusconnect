@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../core/animations/fade_slide_in.dart';
+import '../../../../core/router/app_router.dart';
 import '../../../../core/utils/validators.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -11,7 +13,6 @@ import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_text_field.dart';
 import '../../../../core/widgets/brand.dart';
 import '../bloc/auth_bloc.dart';
-import 'signup_page.dart';
 
 /// Email/password sign-in. On success the router redirect (driven by [AuthBloc])
 /// sends the user to their role's landing tab automatically.
@@ -62,7 +63,9 @@ class _LoginPageState extends State<LoginPage> {
             child: Center(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(AppSpacing.lg),
-                child: FadeSlideIn(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 440),
+                  child: FadeSlideIn(
                   child: Form(
                     key: _formKey,
                     child: Column(
@@ -105,24 +108,23 @@ class _LoginPageState extends State<LoginPage> {
                             onPressed: _submit,
                           ),
                         ),
-                        const SizedBox(height: AppSpacing.md),
-                        TextButton(
-                          onPressed: () => Navigator.of(context).push(
-                            MaterialPageRoute<void>(
-                              builder: (_) => const SignupPage(),
-                            ),
-                          ),
-                          child: Text(
-                            "Don't have an account? Sign up",
-                            style: AppTypography.inter(
-                              size: AppTypography.base,
-                              weight: AppTypography.medium,
-                              color: AppColors.primary.s400,
+                        const SizedBox(height: AppSpacing.sm),
+                        Center(
+                          child: TextButton(
+                            onPressed: () => context.push(AppRoutes.register),
+                            child: Text(
+                              "Don't have an account? Sign up",
+                              style: AppTypography.inter(
+                                size: AppTypography.base,
+                                weight: AppTypography.medium,
+                                color: AppColors.primary.s400,
+                              ),
                             ),
                           ),
                         ),
                       ],
                     ),
+                  ),
                   ),
                 ),
               ),

@@ -55,7 +55,10 @@ class AppShell extends StatelessWidget {
     final inactive = isDark ? AppColors.secondary.s400 : AppColors.secondary.s500;
 
     return Scaffold(
-      extendBody: true,
+      // Keep the body above the bottom bar so each tab page's content and its
+      // FAB (e.g. the admin "+" on Events/Notices) clear the nav, instead of
+      // rendering behind it.
+      extendBody: false,
       body: navigationShell,
       bottomNavigationBar: DecoratedBox(
         decoration: BoxDecoration(

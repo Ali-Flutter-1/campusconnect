@@ -10,7 +10,7 @@ import '../models/announcement_model.dart';
 /// Supabase-backed source for announcements. Throws [ServerException] /
 /// [AuthException]; the repository maps these to `Failure`s.
 abstract interface class AnnouncementRemoteDataSource {
-  Future<List<AnnouncementModel>> getAnnouncements();
+  Future<List<AnnouncementModel>> getAnnouncements({int limit, int offset});
   Future<AnnouncementInteractions> getInteractions();
   Future<void> toggleLike({required String announcementId, required bool liked});
   Future<void> toggleBookmark({
@@ -24,6 +24,12 @@ abstract interface class AnnouncementRemoteDataSource {
     required String author,
     Uint8List? imageBytes,
     String? imageExt,
+  });
+  Future<AnnouncementModel> updateAnnouncement({
+    required String id,
+    required String title,
+    required String content,
+    required String category,
   });
   Future<void> deleteAnnouncement(String announcementId);
 }
@@ -41,12 +47,16 @@ class AnnouncementRemoteDataSourceImpl implements AnnouncementRemoteDataSource {
   }
 
   @override
-  Future<List<AnnouncementModel>> getAnnouncements() async {
+  Future<List<AnnouncementModel>> getAnnouncements({
+    int limit = 20,
+    int offset = 0,
+  }) async {
     try {
       final rows = await _client
           .from('announcements')
           .select()
-          .order('created_at', ascending: false);
+          .order('created_at', ascending: false)
+          .range(offset, offset + limit - 1);
       return rows.map(AnnouncementModel.fromJson).toList();
     } catch (_) {
       throw const ServerException();
@@ -163,6 +173,26 @@ class AnnouncementRemoteDataSourceImpl implements AnnouncementRemoteDataSource {
       return AnnouncementModel.fromJson(row);
     } on ServerException {
       rethrow;
+    } catch (_) {
+      throw const ServerException();
+    }
+  }
+
+  @override
+  Future<AnnouncementModel> updateAnnouncement({
+    required String id,
+    required String title,
+    required String content,
+    required String category,
+  }) async {
+    try {
+      final row = await _client
+          .from('announcements')
+          .update({'title': title, 'content': content, 'category': category})
+          .eq('id', id)
+          .select()
+          .single();
+      return AnnouncementModel.fromJson(row);
     } catch (_) {
       throw const ServerException();
     }

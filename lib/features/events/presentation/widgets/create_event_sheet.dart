@@ -7,6 +7,7 @@ import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_text_field.dart';
 import '../../../../core/widgets/image_picker_field.dart';
+import '../../domain/entities/event.dart';
 
 /// Result of the admin "new event" form.
 class NewEvent {
@@ -31,9 +32,12 @@ class NewEvent {
 
 /// Admin-only modal to schedule an event.
 class CreateEventSheet extends StatefulWidget {
-  const CreateEventSheet({super.key});
+  const CreateEventSheet({super.key, this.initial});
 
-  static Future<NewEvent?> show(BuildContext context) {
+  /// When set, edits an existing event.
+  final Event? initial;
+
+  static Future<NewEvent?> show(BuildContext context, {Event? initial}) {
     return showModalBottomSheet<NewEvent>(
       context: context,
       isScrollControlled: true,
@@ -41,7 +45,7 @@ class CreateEventSheet extends StatefulWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (_) => const CreateEventSheet(),
+      builder: (_) => CreateEventSheet(initial: initial),
     );
   }
 
@@ -51,13 +55,18 @@ class CreateEventSheet extends StatefulWidget {
 
 class _CreateEventSheetState extends State<CreateEventSheet> {
   final _formKey = GlobalKey<FormState>();
-  final _title = TextEditingController();
-  final _description = TextEditingController();
-  final _time = TextEditingController();
-  final _location = TextEditingController();
-  String _category = 'academic';
-  DateTime _date = DateTime.now().add(const Duration(days: 1));
+  late final _title = TextEditingController(text: widget.initial?.title ?? '');
+  late final _description =
+      TextEditingController(text: widget.initial?.description ?? '');
+  late final _time = TextEditingController(text: widget.initial?.time ?? '');
+  late final _location =
+      TextEditingController(text: widget.initial?.location ?? '');
+  late String _category = widget.initial?.category ?? 'academic';
+  late DateTime _date =
+      widget.initial?.date ?? DateTime.now().add(const Duration(days: 1));
   PickedImage? _image;
+
+  bool get _isEditing => widget.initial != null;
 
   static const _categories = ['academic', 'social', 'sports'];
 
@@ -71,11 +80,13 @@ class _CreateEventSheetState extends State<CreateEventSheet> {
   }
 
   Future<void> _pickDate() async {
+    final now = DateTime.now();
     final picked = await showDatePicker(
       context: context,
       initialDate: _date,
-      firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
+      // Allow an already-past date when editing an older event.
+      firstDate: _date.isBefore(now) ? _date : now,
+      lastDate: now.add(const Duration(days: 365)),
     );
     if (picked != null) setState(() => _date = picked);
   }
@@ -111,7 +122,7 @@ class _CreateEventSheetState extends State<CreateEventSheet> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                'New event',
+                _isEditing ? 'Edit event' : 'New event',
                 style: AppTypography.inter(
                   size: AppTypography.lg,
                   weight: AppTypography.bold,
@@ -133,8 +144,10 @@ class _CreateEventSheetState extends State<CreateEventSheet> {
                 hint: 'What is it about?',
               ),
               const SizedBox(height: AppSpacing.md),
-              ImagePickerField(onChanged: (img) => _image = img),
-              const SizedBox(height: AppSpacing.md),
+              if (!_isEditing) ...[
+                ImagePickerField(onChanged: (img) => _image = img),
+                const SizedBox(height: AppSpacing.md),
+              ],
               Row(
                 children: [
                   Expanded(
@@ -183,7 +196,11 @@ class _CreateEventSheetState extends State<CreateEventSheet> {
                 ],
               ),
               const SizedBox(height: AppSpacing.lg),
-              AppButton(label: 'Create event', expand: true, onPressed: _submit),
+              AppButton(
+                label: _isEditing ? 'Save changes' : 'Create event',
+                expand: true,
+                onPressed: _submit,
+              ),
             ],
           ),
         ),

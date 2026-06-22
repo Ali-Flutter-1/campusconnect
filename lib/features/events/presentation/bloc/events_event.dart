@@ -15,6 +15,11 @@ class EventsRefreshRequested extends EventsEvent {
   const EventsRefreshRequested();
 }
 
+/// Load the next page (infinite scroll).
+class EventsLoadMoreRequested extends EventsEvent {
+  const EventsLoadMoreRequested();
+}
+
 /// Change the active category filter ('all', 'academic', 'social', 'sports').
 class EventsFilterChanged extends EventsEvent {
   const EventsFilterChanged(this.category);
@@ -49,6 +54,31 @@ class EventCreated extends EventsEvent {
   @override
   List<Object?> get props =>
       [title, description, date, time, location, category, imageBytes, imageExt];
+}
+
+/// Admin-only: edit an existing event.
+class EventUpdated extends EventsEvent {
+  const EventUpdated({
+    required this.id,
+    required this.title,
+    required this.description,
+    required this.date,
+    required this.time,
+    required this.location,
+    required this.category,
+  });
+
+  final String id;
+  final String title;
+  final String description;
+  final DateTime date;
+  final String time;
+  final String location;
+  final String category;
+
+  @override
+  List<Object?> get props =>
+      [id, title, description, date, time, location, category];
 }
 
 class EventDeleted extends EventsEvent {
