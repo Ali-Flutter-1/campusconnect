@@ -45,6 +45,7 @@ class _EventsView extends StatelessWidget {
     return Scaffold(
       floatingActionButton: isAdmin
           ? FloatingActionButton(
+              heroTag: 'fab_events',
               onPressed: () => _onCreate(context),
               child: const Icon(LucideIcons.plus),
             )

@@ -95,7 +95,6 @@ class _LoginPageState extends State<LoginPage> {
                           obscureText: true,
                           textInputAction: TextInputAction.done,
                           autofillHints: const [AutofillHints.password],
-                          onSubmitted: (_) => _submit(),
                           validator: Validators.password,
                         ),
                         const SizedBox(height: AppSpacing.lg),

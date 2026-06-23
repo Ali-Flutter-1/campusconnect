@@ -89,7 +89,10 @@ void _registerCore() {
 void _registerAuth() {
   // Data
   getIt.registerLazySingleton<AuthRemoteDataSource>(
-    () => AuthRemoteDataSourceImpl(getIt<SupabaseClient>()),
+    () => AuthRemoteDataSourceImpl(
+      getIt<SupabaseClient>(),
+      getIt<StorageService>(),
+    ),
   );
   getIt.registerLazySingleton<AuthRepository>(
     () => AuthRepositoryImpl(getIt<AuthRemoteDataSource>(), getIt<NetworkInfo>()),

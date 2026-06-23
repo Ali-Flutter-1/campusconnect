@@ -29,7 +29,11 @@ class PlaceholderPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = context.surfaces;
+    // Show an app bar (with an automatic back button) when this page was pushed
+    // over another — e.g. the Notifications route opened from the Home bell.
+    final canPop = Navigator.of(context).canPop();
     return Scaffold(
+      appBar: canPop ? AppBar(title: Text(title)) : null,
       body: SafeArea(
         child: Center(
           child: FadeSlideIn(

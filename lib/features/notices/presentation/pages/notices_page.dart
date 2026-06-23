@@ -72,6 +72,7 @@ class _NoticesViewState extends State<_NoticesView> {
     return Scaffold(
       floatingActionButton: isAdmin
           ? FloatingActionButton(
+              heroTag: 'fab_notices',
               onPressed: () => _onCreate(context),
               child: const Icon(LucideIcons.plus),
             )

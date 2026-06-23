@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:dartz/dartz.dart';
 
 import '../../../../core/error/exceptions.dart';
@@ -64,12 +66,16 @@ class AuthRepositoryImpl implements AuthRepository {
     String? course,
     String? department,
     String? year,
+    Uint8List? avatarBytes,
+    String? avatarExt,
   }) =>
       _guarded(() => _remote.updateProfile(
             fullName: fullName,
             course: course,
             department: department,
             year: year,
+            avatarBytes: avatarBytes,
+            avatarExt: avatarExt,
           ));
 
   /// Shared online-check + exception→failure mapping for auth actions.

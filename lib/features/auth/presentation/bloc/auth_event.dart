@@ -52,20 +52,26 @@ class AuthSignOutRequested extends AuthEvent {
   const AuthSignOutRequested();
 }
 
-/// Update editable profile fields (name, course, department, year).
+/// Update editable profile fields (name, course, department, year) and/or the
+/// avatar image.
 class AuthProfileUpdateRequested extends AuthEvent {
   const AuthProfileUpdateRequested({
     this.fullName,
     this.course,
     this.department,
     this.year,
+    this.avatarBytes,
+    this.avatarExt,
   });
 
   final String? fullName;
   final String? course;
   final String? department;
   final String? year;
+  final Uint8List? avatarBytes;
+  final String? avatarExt;
 
   @override
-  List<Object?> get props => [fullName, course, department, year];
+  List<Object?> get props =>
+      [fullName, course, department, year, avatarBytes, avatarExt];
 }

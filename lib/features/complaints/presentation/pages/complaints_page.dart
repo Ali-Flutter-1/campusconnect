@@ -33,6 +33,7 @@ class ComplaintsPage extends StatelessWidget {
         builder: (context) => Scaffold(
           appBar: AppBar(title: const Text('My Submissions')),
           floatingActionButton: FloatingActionButton.extended(
+            heroTag: 'fab_complaints',
             onPressed: () => _onCreate(context),
             icon: const Icon(LucideIcons.plus),
             label: const Text('Feedback'),

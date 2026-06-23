@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 
@@ -6,7 +8,7 @@ import '../../../../core/usecases/usecase.dart';
 import '../entities/app_user.dart';
 import '../repositories/auth_repository.dart';
 
-/// Updates the current user's editable profile fields.
+/// Updates the current user's editable profile fields (and optional avatar).
 class UpdateProfile implements UseCase<AppUser, UpdateProfileParams> {
   const UpdateProfile(this._repository);
 
@@ -19,6 +21,8 @@ class UpdateProfile implements UseCase<AppUser, UpdateProfileParams> {
         course: params.course,
         department: params.department,
         year: params.year,
+        avatarBytes: params.avatarBytes,
+        avatarExt: params.avatarExt,
       );
 }
 
@@ -28,13 +32,18 @@ class UpdateProfileParams extends Equatable {
     this.course,
     this.department,
     this.year,
+    this.avatarBytes,
+    this.avatarExt,
   });
 
   final String? fullName;
   final String? course;
   final String? department;
   final String? year;
+  final Uint8List? avatarBytes;
+  final String? avatarExt;
 
   @override
-  List<Object?> get props => [fullName, course, department, year];
+  List<Object?> get props =>
+      [fullName, course, department, year, avatarBytes, avatarExt];
 }

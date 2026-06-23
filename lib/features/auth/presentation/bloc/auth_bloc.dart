@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
@@ -50,12 +51,22 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   StreamSubscription<AppUser?>? _sub;
 
+  /// Minimum time the branded splash stays up before we resolve the session,
+  /// so the splash is always visible for a beat on launch.
+  static const _minSplash = Duration(seconds: 2);
+
   Future<void> _onSubscriptionRequested(
     AuthSubscriptionRequested event,
     Emitter<AuthState> emit,
   ) async {
     // Seed from the current session, then track changes.
+    final timer = Stopwatch()..start();
     final result = await _getCurrentUser(const NoParams());
+
+    // Hold on the splash for at least [_minSplash] before redirecting.
+    final remaining = _minSplash - timer.elapsed;
+    if (remaining > Duration.zero) await Future.delayed(remaining);
+
     result.fold(
       (_) => emit(state.copyWith(status: AuthStatus.unauthenticated)),
       (user) => emit(_resolved(user)),
@@ -129,6 +140,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       course: event.course,
       department: event.department,
       year: event.year,
+      avatarBytes: event.avatarBytes,
+      avatarExt: event.avatarExt,
     ));
     result.fold(
       (failure) => emit(state.copyWith(

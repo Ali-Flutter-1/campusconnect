@@ -1,9 +1,12 @@
 // Supabase exports its own `AuthException`; hide it so our domain exception
 // (core/error/exceptions.dart) is the one in scope. `AuthApiException` (the
 // concrete error Supabase throws) is unaffected by the hide.
+import 'dart:typed_data';
+
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthException;
 
 import '../../../../core/error/exceptions.dart';
+import '../../../../core/services/storage_service.dart';
 import '../../domain/entities/user_role.dart';
 import '../models/app_user_model.dart';
 
@@ -25,13 +28,16 @@ abstract interface class AuthRemoteDataSource {
     String? course,
     String? department,
     String? year,
+    Uint8List? avatarBytes,
+    String? avatarExt,
   });
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
-  AuthRemoteDataSourceImpl(this._client);
+  AuthRemoteDataSourceImpl(this._client, this._storage);
 
   final SupabaseClient _client;
+  final StorageService _storage;
 
   @override
   Stream<AppUserModel?> authStateChanges() {
@@ -121,21 +127,34 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     String? course,
     String? department,
     String? year,
+    Uint8List? avatarBytes,
+    String? avatarExt,
   }) async {
     final user = _client.auth.currentUser;
     if (user == null) throw const AuthException();
     try {
+      String? avatarUrl;
+      if (avatarBytes != null) {
+        avatarUrl = await _storage.uploadAvatar(
+          userId: user.id,
+          bytes: avatarBytes,
+          ext: avatarExt ?? 'jpg',
+        );
+      }
       final updates = <String, dynamic>{
         'full_name': ?fullName,
         'course': ?course,
         'department': ?department,
         'year': ?year,
+        'avatar_url': ?avatarUrl,
       };
       if (updates.isNotEmpty) {
         await _client.from('profiles').update(updates).eq('id', user.id);
       }
       return _loadProfile(user.id, user.email);
     } on AuthException {
+      rethrow;
+    } on ServerException {
       rethrow;
     } catch (_) {
       throw const ServerException();

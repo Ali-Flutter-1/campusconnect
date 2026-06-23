@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_surfaces.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_text_field.dart';
+import '../../../../core/widgets/image_picker_field.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 
 /// Admin/student profile editor — updates name, course, department and year via
@@ -38,6 +38,7 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
   late final TextEditingController _course;
   late final TextEditingController _department;
   late final TextEditingController _year;
+  PickedImage? _avatar;
 
   @override
   void initState() {
@@ -64,6 +65,8 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
           course: _course.text.trim(),
           department: _department.text.trim(),
           year: _year.text.trim(),
+          avatarBytes: _avatar?.bytes,
+          avatarExt: _avatar?.ext,
         ));
   }
 
@@ -97,6 +100,17 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
               ),
             ),
             const SizedBox(height: AppSpacing.lg),
+            Text(
+              'Profile photo',
+              style: AppTypography.inter(
+                size: AppTypography.sm,
+                weight: AppTypography.medium,
+                color: surfaces.secondaryText,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            ImagePickerField(onChanged: (img) => _avatar = img),
+            const SizedBox(height: AppSpacing.md),
             AppTextField(controller: _name, label: 'Full name', hint: 'Your name'),
             const SizedBox(height: AppSpacing.md),
             AppTextField(

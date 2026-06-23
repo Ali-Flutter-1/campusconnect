@@ -119,7 +119,6 @@ class _SignupPageState extends State<SignupPage> {
                         obscureText: true,
                         textInputAction: TextInputAction.done,
                         autofillHints: const [AutofillHints.newPassword],
-                        onSubmitted: (_) => _submit(),
                         validator: Validators.password,
                       ),
                       const SizedBox(height: AppSpacing.md),

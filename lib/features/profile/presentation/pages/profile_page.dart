@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -105,7 +105,11 @@ class _Header extends StatelessWidget {
       children: [
         Stack(
           children: [
-            AvatarCircle(name: user.displayName, size: 92),
+            AvatarCircle(
+              name: user.displayName,
+              imageUrl: user.avatarUrl,
+              size: 92,
+            ),
             Positioned(
               right: 0,
               bottom: 0,

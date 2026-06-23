@@ -138,6 +138,8 @@ class _Header extends StatelessWidget {
     final name = context.select<AuthBloc, String>(
       (b) => b.state.user?.displayName ?? 'Student',
     );
+    final avatarUrl =
+        context.select<AuthBloc, String?>((b) => b.state.user?.avatarUrl);
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(
@@ -175,7 +177,7 @@ class _Header extends StatelessWidget {
             icon: Icon(LucideIcons.bell, color: surfaces.primaryText),
           ),
           const SizedBox(width: AppSpacing.sm),
-          AvatarCircle(name: name, size: 40),
+          AvatarCircle(name: name, imageUrl: avatarUrl, size: 40),
         ],
       ),
     );

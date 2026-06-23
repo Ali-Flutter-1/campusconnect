@@ -58,6 +58,7 @@ class _AnnouncementsView extends StatelessWidget {
       ),
       floatingActionButton: isAdmin
           ? FloatingActionButton(
+              heroTag: 'fab_announcements',
               onPressed: () => _onCreate(context),
               child: const Icon(LucideIcons.plus),
             )

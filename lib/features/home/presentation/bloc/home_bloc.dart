@@ -35,9 +35,13 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       emit(state.copyWith(status: HomeStatus.loading, clearError: true));
     }
 
-    final announcements =
-        await _getAnnouncements(const GetAnnouncementsParams(limit: 3));
-    final events = await _getEvents(const GetEventsParams(limit: 3));
+    const sectionLimit = 10;
+    final announcements = await _getAnnouncements(
+      const GetAnnouncementsParams(limit: sectionLimit),
+    );
+    final events = await _getEvents(
+      const GetEventsParams(limit: sectionLimit),
+    );
     final polls = await _getPolls(const GetPollsParams(limit: 2));
 
     // Home is best-effort: if any one section fails we still render the rest.
@@ -47,9 +51,9 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       status: HomeStatus.success,
       announcements: announcements
           .getOrElse(() => const [])
-          .take(3)
+          .take(sectionLimit)
           .toList(),
-      events: events.getOrElse(() => const []).take(3).toList(),
+      events: events.getOrElse(() => const []).take(sectionLimit).toList(),
       polls: polls.getOrElse(() => const []),
       errorMessage: hadError ? 'Some sections failed to load.' : null,
       clearError: !hadError,

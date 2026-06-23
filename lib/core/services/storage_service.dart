@@ -39,4 +39,31 @@ class StorageService {
       throw const ServerException('Image upload failed.');
     }
   }
+
+  /// Uploads a user's avatar under `avatars/<userId>/…` (the path that storage
+  /// RLS lets that user write — see migration 0008) and returns the public URL.
+  /// Each upload uses a unique filename so the URL changes and clients don't
+  /// show a stale cached image.
+  Future<String> uploadAvatar({
+    required String userId,
+    required Uint8List bytes,
+    required String ext,
+  }) async {
+    try {
+      final safeExt = ext.isEmpty ? 'jpg' : ext.toLowerCase();
+      final path =
+          'avatars/$userId/${DateTime.now().microsecondsSinceEpoch}.$safeExt';
+      await _client.storage.from(bucket).uploadBinary(
+            path,
+            bytes,
+            fileOptions: FileOptions(
+              contentType: 'image/${safeExt == 'jpg' ? 'jpeg' : safeExt}',
+              upsert: true,
+            ),
+          );
+      return _client.storage.from(bucket).getPublicUrl(path);
+    } catch (_) {
+      throw const ServerException('Avatar upload failed.');
+    }
+  }
 }

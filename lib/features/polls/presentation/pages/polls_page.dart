@@ -28,6 +28,7 @@ class PollsPage extends StatelessWidget {
           return Scaffold(
             floatingActionButton: isAdmin
                 ? FloatingActionButton(
+                    heroTag: 'fab_polls',
                     onPressed: () => _onCreate(context),
                     child: const Icon(LucideIcons.plus),
                   )

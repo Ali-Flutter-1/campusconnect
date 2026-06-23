@@ -1,27 +1,33 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 
-/// Circular avatar that falls back to the first initial of a name, used in chat
-/// bubbles and the profile header. Ports the RN `avatar` / `avatarText` styles.
+/// Circular avatar. Shows [imageUrl] when provided (with a graceful fallback to
+/// the name's first initial), otherwise just the initial. Used in the profile
+/// header, home header and chat bubbles.
 class AvatarCircle extends StatelessWidget {
   const AvatarCircle({
     super.key,
     required this.name,
+    this.imageUrl,
     this.size = 32,
     this.backgroundColor,
   });
 
   final String name;
+  final String? imageUrl;
   final double size;
   final Color? backgroundColor;
 
   @override
   Widget build(BuildContext context) {
     final trimmed = name.trim();
-    final initial = trimmed.isEmpty ? '?' : trimmed.substring(0, 1).toUpperCase();
-    return Container(
+    final initial =
+        trimmed.isEmpty ? '?' : trimmed.substring(0, 1).toUpperCase();
+
+    final fallback = Container(
       width: size,
       height: size,
       alignment: Alignment.center,
@@ -36,6 +42,19 @@ class AvatarCircle extends StatelessWidget {
           weight: AppTypography.semiBold,
           color: AppColors.white,
         ),
+      ),
+    );
+
+    if (imageUrl == null || imageUrl!.isEmpty) return fallback;
+
+    return ClipOval(
+      child: CachedNetworkImage(
+        imageUrl: imageUrl!,
+        width: size,
+        height: size,
+        fit: BoxFit.cover,
+        placeholder: (_, _) => fallback,
+        errorWidget: (_, _, _) => fallback,
       ),
     );
   }

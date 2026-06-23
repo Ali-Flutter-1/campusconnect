@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'core/widgets/offline_banner.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'injection.dart';
 
@@ -25,6 +26,13 @@ class ConnectApp extends StatelessWidget {
         darkTheme: AppTheme.dark,
         themeMode: ThemeMode.dark,
         routerConfig: appRouter,
+        // Overlay a top "offline" banner above whatever route is showing.
+        builder: (context, child) => Column(
+          children: [
+            const OfflineBanner(),
+            Expanded(child: child ?? const SizedBox.shrink()),
+          ],
+        ),
       ),
     );
   }

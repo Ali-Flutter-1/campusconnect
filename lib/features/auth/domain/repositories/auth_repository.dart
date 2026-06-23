@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:dartz/dartz.dart';
 
 import '../../../../core/error/failures.dart';
@@ -27,11 +29,14 @@ abstract interface class AuthRepository {
 
   Future<Either<Failure, Unit>> signOut();
 
-  /// Updates the signed-in user's profile fields and returns the fresh user.
+  /// Updates the signed-in user's profile fields (and optionally uploads a new
+  /// avatar) and returns the fresh user.
   Future<Either<Failure, AppUser>> updateProfile({
     String? fullName,
     String? course,
     String? department,
     String? year,
+    Uint8List? avatarBytes,
+    String? avatarExt,
   });
 }
