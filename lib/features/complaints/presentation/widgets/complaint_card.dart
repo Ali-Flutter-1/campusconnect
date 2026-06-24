@@ -15,6 +15,8 @@ ColorRamp _statusColor(String status) {
       return AppColors.success;
     case 'in_progress':
       return AppColors.primary;
+    case 'rejected':
+      return AppColors.error;
     default:
       return AppColors.warning;
   }
@@ -26,6 +28,8 @@ String _statusLabel(String status) {
       return 'IN PROGRESS';
     case 'resolved':
       return 'RESOLVED';
+    case 'rejected':
+      return 'REJECTED';
     default:
       return 'PENDING';
   }

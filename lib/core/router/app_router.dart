@@ -7,6 +7,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../../features/admin/presentation/pages/admin_dashboard_page.dart';
 import '../../features/announcements/presentation/pages/announcements_page.dart';
 import '../../features/chat/presentation/pages/chat_page.dart';
+import '../../features/complaints/presentation/pages/admin_approvals_page.dart';
 import '../../features/complaints/presentation/pages/complaints_page.dart';
 import '../../features/events/presentation/pages/events_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
@@ -42,6 +43,7 @@ abstract final class AppRoutes {
   static const polls = '/polls';
   static const notifications = '/notifications';
   static const complaints = '/complaints';
+  static const approvals = '/approvals';
 }
 
 final _rootKey = GlobalKey<NavigatorState>();
@@ -165,6 +167,12 @@ final GoRouter appRouter = GoRouter(
       parentNavigatorKey: _rootKey,
       pageBuilder: (context, state) =>
           buildFadeSlidePage(state: state, child: const ComplaintsPage()),
+    ),
+    GoRoute(
+      path: AppRoutes.approvals,
+      parentNavigatorKey: _rootKey,
+      pageBuilder: (context, state) =>
+          buildFadeSlidePage(state: state, child: const AdminApprovalsPage()),
     ),
   ],
 );

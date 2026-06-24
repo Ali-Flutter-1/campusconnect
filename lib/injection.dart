@@ -6,6 +6,10 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/network/network_info.dart';
 import 'core/services/cache_service.dart';
 import 'core/services/storage_service.dart';
+import 'core/sync/outbox_store.dart';
+import 'core/sync/sync_service.dart';
+import 'features/chat/data/sync/chat_send_handler.dart';
+import 'features/polls/data/sync/poll_vote_handler.dart';
 import 'features/auth/data/datasources/auth_remote_data_source.dart';
 import 'features/auth/data/repositories/auth_repository_impl.dart';
 import 'features/auth/domain/repositories/auth_repository.dart';
@@ -28,10 +32,12 @@ import 'features/chat/data/repositories/chat_repository_impl.dart';
 import 'features/chat/domain/repositories/chat_repository.dart';
 import 'features/chat/domain/usecases/chat_usecases.dart';
 import 'features/chat/presentation/bloc/chat_bloc.dart';
+import 'features/complaints/data/datasources/complaint_local_data_source.dart';
 import 'features/complaints/data/datasources/complaint_remote_data_source.dart';
 import 'features/complaints/data/repositories/complaint_repository_impl.dart';
 import 'features/complaints/domain/repositories/complaint_repository.dart';
 import 'features/complaints/domain/usecases/complaint_usecases.dart';
+import 'features/complaints/presentation/bloc/admin_complaints_bloc.dart';
 import 'features/complaints/presentation/bloc/complaints_bloc.dart';
 import 'features/events/data/datasources/event_local_data_source.dart';
 import 'features/events/data/datasources/event_remote_data_source.dart';
@@ -71,6 +77,25 @@ Future<void> configureDependencies() async {
   _registerChat();
   _registerNotices();
   _registerComplaints();
+  _registerSync();
+}
+
+/// Offline write queue (outbox). Registered last so feature repositories the
+/// handlers depend on already exist.
+void _registerSync() {
+  getIt.registerLazySingleton(
+    () => OutboxStore(Hive.box(OutboxStore.boxName)),
+  );
+  getIt.registerLazySingleton<SyncService>(
+    () => SyncService(
+      store: getIt<OutboxStore>(),
+      connection: getIt<InternetConnection>(),
+      handlers: [
+        ChatSendHandler(getIt<ChatRepository>()),
+        PollVoteHandler(getIt<PollRepository>()),
+      ],
+    ),
+  );
 }
 
 /// Cross-cutting infrastructure shared by every feature.
@@ -218,8 +243,8 @@ void _registerPolls() {
     () => PollsBloc(
       getPolls: getIt(),
       getUserVotes: getIt(),
-      castVote: getIt(),
       createPoll: getIt(),
+      syncService: getIt<SyncService>(),
     ),
   );
 }
@@ -252,9 +277,9 @@ void _registerChat() {
   getIt.registerFactory(
     () => ChatBloc(
       getMessages: getIt(),
-      sendMessage: getIt(),
       watchMessages: getIt(),
       getCurrentUserId: getIt(),
+      syncService: getIt<SyncService>(),
     ),
   );
 }
@@ -295,20 +320,34 @@ void _registerComplaints() {
   getIt.registerLazySingleton<ComplaintRemoteDataSource>(
     () => ComplaintRemoteDataSourceImpl(getIt<SupabaseClient>()),
   );
+  getIt.registerLazySingleton<ComplaintLocalDataSource>(
+    () => ComplaintLocalDataSourceImpl(getIt<CacheService>()),
+  );
   getIt.registerLazySingleton<ComplaintRepository>(
     () => ComplaintRepositoryImpl(
       getIt<ComplaintRemoteDataSource>(),
+      getIt<ComplaintLocalDataSource>(),
       getIt<NetworkInfo>(),
     ),
   );
 
   getIt.registerLazySingleton(() => GetMyComplaints(getIt()));
   getIt.registerLazySingleton(() => CreateComplaint(getIt()));
+  getIt.registerLazySingleton(() => GetAllComplaints(getIt()));
+  getIt.registerLazySingleton(() => GetCachedComplaints(getIt()));
+  getIt.registerLazySingleton(() => UpdateComplaintStatus(getIt()));
 
   getIt.registerFactory(
     () => ComplaintsBloc(
       getMyComplaints: getIt(),
       createComplaint: getIt(),
+    ),
+  );
+  getIt.registerFactory(
+    () => AdminComplaintsBloc(
+      getAllComplaints: getIt(),
+      getCachedComplaints: getIt(),
+      updateStatus: getIt(),
     ),
   );
 }

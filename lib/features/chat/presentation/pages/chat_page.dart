@@ -123,6 +123,8 @@ class _ChatViewState extends State<_ChatView> {
                             return MessageBubble(
                               message: m,
                               isMine: state.isMine(m),
+                              onRetry: () =>
+                                  bloc.add(ChatRetryRequested(m.id)),
                             );
                           },
                         ),

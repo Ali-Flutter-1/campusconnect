@@ -39,6 +39,8 @@ class ChatRepositoryImpl implements ChatRepository {
     required String room,
     required String content,
   }) async {
+    // No connectivity pre-check: the outbox owns retries, so a failed send
+    // (incl. offline) surfaces as a Failure the SyncService can re-queue.
     try {
       await _remote.sendMessage(room: room, content: content);
       return const Right(unit);

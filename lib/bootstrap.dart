@@ -5,6 +5,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/config/app_config.dart';
 import 'core/services/cache_service.dart';
+import 'core/sync/outbox_store.dart';
+import 'core/sync/sync_service.dart';
 import 'injection.dart';
 
 /// One-time application startup: initialize Flutter bindings, Supabase, and the
@@ -12,9 +14,10 @@ import 'injection.dart';
 Future<void> bootstrap() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Local cache store (stale-while-revalidate reads + offline).
+  // Local stores: cache (stale-while-revalidate reads) + outbox (offline writes).
   await Hive.initFlutter();
   await CacheService.openBox();
+  await OutboxStore.openBox();
 
   if (AppConfig.hasSupabaseConfig) {
     await Supabase.initialize(
@@ -31,4 +34,7 @@ Future<void> bootstrap() async {
   }
 
   await configureDependencies();
+
+  // Begin flushing any queued offline writes (and on every reconnect).
+  getIt<SyncService>().start();
 }

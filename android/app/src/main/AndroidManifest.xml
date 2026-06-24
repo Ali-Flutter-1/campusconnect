@@ -2,7 +2,7 @@
     <!-- Required so release builds can reach Supabase / Google Fonts. -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <application
-        android:label="connect"
+        android:label="CampusConnect"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

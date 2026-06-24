@@ -13,4 +13,16 @@ abstract interface class ComplaintRepository {
     required String description,
     required String category,
   });
+
+  /// Admin-only: the cached approvals queue, for instant/offline paint.
+  List<Complaint> getCachedComplaints();
+
+  /// Admin-only: every request (newest first) with submitter details.
+  Future<Either<Failure, List<Complaint>>> getAllComplaints();
+
+  /// Admin-only: set a request's [status].
+  Future<Either<Failure, Complaint>> updateStatus({
+    required String id,
+    required String status,
+  });
 }

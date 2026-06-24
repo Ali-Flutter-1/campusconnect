@@ -32,8 +32,10 @@ class ImagePickerField extends StatefulWidget {
 class _ImagePickerFieldState extends State<ImagePickerField> {
   final _picker = ImagePicker();
   Uint8List? _preview;
+  bool _loading = false;
 
   Future<void> _pick() async {
+    if (_loading) return;
     try {
       final file = await _picker.pickImage(
         source: ImageSource.gallery,
@@ -41,12 +43,19 @@ class _ImagePickerFieldState extends State<ImagePickerField> {
         imageQuality: 80,
       );
       if (file == null) return;
+      // Reading/decoding the picked file can take a beat — show a spinner.
+      if (mounted) setState(() => _loading = true);
       final bytes = await file.readAsBytes();
       final ext = file.name.contains('.') ? file.name.split('.').last : 'jpg';
-      setState(() => _preview = bytes);
+      if (!mounted) return;
+      setState(() {
+        _preview = bytes;
+        _loading = false;
+      });
       widget.onChanged(PickedImage(bytes: bytes, ext: ext));
     } catch (_) {
       if (mounted) {
+        setState(() => _loading = false);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Could not pick image.')),
         );
@@ -62,6 +71,39 @@ class _ImagePickerFieldState extends State<ImagePickerField> {
   @override
   Widget build(BuildContext context) {
     final surfaces = context.surfaces;
+
+    if (_loading) {
+      return Container(
+        height: 96,
+        decoration: BoxDecoration(
+          color: surfaces.cardBackground,
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          border: Border.all(color: surfaces.cardBorder),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(
+                strokeWidth: 2.5,
+                valueColor:
+                    AlwaysStoppedAnimation<Color>(AppColors.primary.s400),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              'Loading image…',
+              style: AppTypography.inter(
+                size: AppTypography.sm,
+                color: surfaces.secondaryText,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
 
     if (_preview != null) {
       return Stack(

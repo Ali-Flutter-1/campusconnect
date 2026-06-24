@@ -33,3 +33,12 @@ class PollCreated extends PollsEvent {
   @override
   List<Object?> get props => [question, options];
 }
+
+/// Internal: the outbox finished flushing a queued vote (success/fail).
+class _PollSyncResult extends PollsEvent {
+  const _PollSyncResult(this.result);
+  final SyncResult result;
+
+  @override
+  List<Object?> get props => [result.id, result.outcome];
+}

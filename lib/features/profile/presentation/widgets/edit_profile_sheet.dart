@@ -87,10 +87,11 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
           top: AppSpacing.lg,
           bottom: MediaQuery.of(context).viewInsets.bottom + AppSpacing.lg,
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
             Text(
               'Edit profile',
               style: AppTypography.inter(
@@ -149,6 +150,7 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
               ),
             ),
           ],
+          ),
         ),
       ),
     );

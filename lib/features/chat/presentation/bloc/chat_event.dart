@@ -37,3 +37,21 @@ class ChatSendRequested extends ChatEvent {
   @override
   List<Object?> get props => [content];
 }
+
+/// Re-queue a message whose offline send had permanently failed.
+class ChatRetryRequested extends ChatEvent {
+  const ChatRetryRequested(this.messageId);
+  final String messageId;
+
+  @override
+  List<Object?> get props => [messageId];
+}
+
+/// Internal: the outbox finished flushing a chat message (success/fail).
+class _ChatSyncResult extends ChatEvent {
+  const _ChatSyncResult(this.result);
+  final SyncResult result;
+
+  @override
+  List<Object?> get props => [result.id, result.outcome];
+}

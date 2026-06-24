@@ -13,92 +13,78 @@ import '../../../../core/widgets/empty_state.dart';
 import '../../../../core/widgets/error_view.dart';
 import '../../../../core/widgets/filter_pill.dart';
 import '../../../../injection.dart';
-import '../bloc/complaints_bloc.dart';
-import '../widgets/complaint_card.dart';
-import '../widgets/create_complaint_sheet.dart';
+import '../bloc/admin_complaints_bloc.dart';
+import '../widgets/admin_complaint_card.dart';
 
-/// "My Submissions" — complaint/feedback tracking with summary stats, status
-/// filter, and a button to file new feedback.
-class ComplaintsPage extends StatelessWidget {
-  const ComplaintsPage({super.key});
+/// Admin "Approvals" — review every student request and approve, resolve or
+/// reject it. Mirrors the student "My Requests" screen but acts on all rows.
+class AdminApprovalsPage extends StatelessWidget {
+  const AdminApprovalsPage({super.key});
 
-  static const _filters = ['all', 'open', 'in_progress', 'resolved'];
+  static const _filters = [
+    'all',
+    'open',
+    'in_progress',
+    'resolved',
+    'rejected',
+  ];
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<ComplaintsBloc>(
-      create: (_) =>
-          getIt<ComplaintsBloc>()..add(const ComplaintsLoadRequested()),
-      child: Builder(
-        builder: (context) => Scaffold(
-          appBar: AppBar(title: const Text('My Requests')),
-          floatingActionButton: FloatingActionButton.extended(
-            heroTag: 'fab_complaints',
-            onPressed: () => _onCreate(context),
-            icon: const Icon(LucideIcons.plus),
-            label: const Text('Feedback'),
-          ),
-          body: SafeArea(
-            child: BlocConsumer<ComplaintsBloc, ComplaintsState>(
-              listenWhen: (p, c) => p.errorMessage != c.errorMessage,
-              listener: (context, state) {
-                if (state.errorMessage != null) {
-                  ScaffoldMessenger.of(context)
-                    ..hideCurrentSnackBar()
-                    ..showSnackBar(SnackBar(content: Text(state.errorMessage!)));
-                }
-              },
-              builder: (context, state) {
-                switch (state.status) {
-                  case ComplaintsStatus.initial:
-                  case ComplaintsStatus.loading:
-                    return const AppLoader();
-                  case ComplaintsStatus.failure when state.complaints.isEmpty:
-                    return ErrorView(
-                      message:
-                          state.errorMessage ?? 'Could not load submissions.',
-                      onRetry: () => context
-                          .read<ComplaintsBloc>()
-                          .add(const ComplaintsLoadRequested()),
-                    );
-                  case ComplaintsStatus.success:
-                  case ComplaintsStatus.failure:
-                    return _Body(state: state, filters: _filters);
-                }
-              },
-            ),
+    return BlocProvider<AdminComplaintsBloc>(
+      create: (_) => getIt<AdminComplaintsBloc>()
+        ..add(const AdminComplaintsLoadRequested()),
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Approvals')),
+        body: SafeArea(
+          child: BlocConsumer<AdminComplaintsBloc, AdminComplaintsState>(
+            listenWhen: (p, c) => p.errorMessage != c.errorMessage,
+            listener: (context, state) {
+              if (state.errorMessage != null) {
+                ScaffoldMessenger.of(context)
+                  ..hideCurrentSnackBar()
+                  ..showSnackBar(SnackBar(content: Text(state.errorMessage!)));
+              }
+            },
+            builder: (context, state) {
+              switch (state.status) {
+                case AdminComplaintsStatus.initial:
+                case AdminComplaintsStatus.loading:
+                  return const AppLoader();
+                case AdminComplaintsStatus.failure
+                    when state.complaints.isEmpty:
+                  return ErrorView(
+                    message: state.errorMessage ?? 'Could not load requests.',
+                    onRetry: () => context
+                        .read<AdminComplaintsBloc>()
+                        .add(const AdminComplaintsLoadRequested()),
+                  );
+                case AdminComplaintsStatus.success:
+                case AdminComplaintsStatus.failure:
+                  return _Body(state: state, filters: _filters);
+              }
+            },
           ),
         ),
       ),
     );
-  }
-
-  Future<void> _onCreate(BuildContext context) async {
-    final bloc = context.read<ComplaintsBloc>();
-    final result = await CreateComplaintSheet.show(context);
-    if (result != null) {
-      bloc.add(ComplaintCreated(
-        title: result.title,
-        description: result.description,
-        category: result.category,
-      ));
-    }
   }
 }
 
 class _Body extends StatelessWidget {
   const _Body({required this.state, required this.filters});
 
-  final ComplaintsState state;
+  final AdminComplaintsState state;
   final List<String> filters;
 
   @override
   Widget build(BuildContext context) {
-    final bloc = context.read<ComplaintsBloc>();
+    final bloc = context.read<AdminComplaintsBloc>();
     // Filter once per build (the getter rebuilds the list on every read).
     final items = state.filtered;
     return RefreshIndicator(
-      onRefresh: () async => bloc.add(const ComplaintsRefreshRequested()),
+      onRefresh: () async =>
+          bloc.add(const AdminComplaintsRefreshRequested()),
       child: ListView(
         padding: const EdgeInsets.fromLTRB(
           AppSpacing.lg,
@@ -110,8 +96,8 @@ class _Body extends StatelessWidget {
           Row(
             children: [
               _StatCard(
-                label: 'Active',
-                value: state.activeCount,
+                label: 'Pending',
+                value: state.pendingCount,
                 color: AppColors.warning,
               ),
               const SizedBox(width: AppSpacing.md),
@@ -143,7 +129,7 @@ class _Body extends StatelessWidget {
                 return FilterPill(
                   label: label,
                   selected: state.filter == f,
-                  onTap: () => bloc.add(ComplaintsFilterChanged(f)),
+                  onTap: () => bloc.add(AdminComplaintsFilterChanged(f)),
                 );
               },
             ),
@@ -153,9 +139,9 @@ class _Body extends StatelessWidget {
             const Padding(
               padding: EdgeInsets.only(top: AppSpacing.xxl),
               child: EmptyState(
-                icon: LucideIcons.clipboardList,
-                title: 'No requests',
-                subtitle: 'Tap "Feedback" to share something with the campus team.',
+                icon: LucideIcons.clipboardCheck,
+                title: 'Nothing here',
+                subtitle: 'No requests match this filter.',
               ),
             )
           else
@@ -164,7 +150,15 @@ class _Body extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: AppSpacing.md),
                 child: FadeSlideIn(
                   index: i,
-                  child: ComplaintCard(complaint: items[i]),
+                  child: AdminComplaintCard(
+                    complaint: items[i],
+                    onAction: (status) => bloc.add(
+                      AdminComplaintStatusChanged(
+                        id: items[i].id,
+                        status: status,
+                      ),
+                    ),
+                  ),
                 ),
               ),
         ],

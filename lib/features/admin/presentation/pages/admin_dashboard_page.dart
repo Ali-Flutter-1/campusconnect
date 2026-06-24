@@ -54,6 +54,13 @@ class AdminDashboardPage extends StatelessWidget {
         route: AppRoutes.notices,
         color: AppColors.warning,
       ),
+      const _AdminAction(
+        icon: LucideIcons.clipboardCheck,
+        label: 'Approvals',
+        subtitle: 'Review requests',
+        route: AppRoutes.approvals,
+        color: AppColors.accent,
+      ),
     ];
 
     return Scaffold(

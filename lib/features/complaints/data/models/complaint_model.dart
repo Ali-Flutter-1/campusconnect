@@ -10,6 +10,8 @@ class ComplaintModel extends Complaint {
     required super.category,
     required super.status,
     required super.createdAt,
+    super.authorName,
+    super.authorEmail,
   });
 
   factory ComplaintModel.fromJson(Map<String, dynamic> json) {
@@ -23,8 +25,24 @@ class ComplaintModel extends Complaint {
       createdAt:
           DateTime.tryParse(json['created_at'] as String? ?? '')?.toLocal() ??
               DateTime.now(),
+      // Set only in the admin view, where rows are enriched from `profiles`.
+      authorName: json['author_name'] as String?,
+      authorEmail: json['author_email'] as String?,
     );
   }
+
+  /// Full row shape for the Hive cache (round-trips through [fromJson]).
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'user_id': userId,
+        'title': title,
+        'description': description,
+        'category': category,
+        'status': status,
+        'created_at': createdAt.toIso8601String(),
+        'author_name': authorName,
+        'author_email': authorEmail,
+      };
 
   static Map<String, dynamic> toInsert({
     required String userId,

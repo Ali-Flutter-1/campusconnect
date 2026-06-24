@@ -44,3 +44,45 @@ class CreateComplaint implements UseCase<Complaint, CreateComplaintParams> {
         category: params.category,
       );
 }
+
+/// Admin-only: load every submitted request for triage.
+class GetAllComplaints implements UseCase<List<Complaint>, NoParams> {
+  const GetAllComplaints(this._repository);
+
+  final ComplaintRepository _repository;
+
+  @override
+  Future<Either<Failure, List<Complaint>>> call(NoParams params) =>
+      _repository.getAllComplaints();
+}
+
+/// Admin-only: synchronous cached approvals queue, for instant/offline paint.
+class GetCachedComplaints {
+  const GetCachedComplaints(this._repository);
+
+  final ComplaintRepository _repository;
+
+  List<Complaint> call() => _repository.getCachedComplaints();
+}
+
+class UpdateComplaintStatusParams extends Equatable {
+  const UpdateComplaintStatusParams({required this.id, required this.status});
+
+  final String id;
+  final String status;
+
+  @override
+  List<Object?> get props => [id, status];
+}
+
+/// Admin-only: approve / resolve / reject / reopen a request.
+class UpdateComplaintStatus
+    implements UseCase<Complaint, UpdateComplaintStatusParams> {
+  const UpdateComplaintStatus(this._repository);
+
+  final ComplaintRepository _repository;
+
+  @override
+  Future<Either<Failure, Complaint>> call(UpdateComplaintStatusParams params) =>
+      _repository.updateStatus(id: params.id, status: params.status);
+}
