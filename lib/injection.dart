@@ -271,14 +271,22 @@ void _registerChat() {
 
   getIt.registerLazySingleton(() => GetMessages(getIt()));
   getIt.registerLazySingleton(() => SendMessage(getIt()));
+  getIt.registerLazySingleton(() => EditMessage(getIt()));
+  getIt.registerLazySingleton(() => DeleteMessage(getIt()));
+  getIt.registerLazySingleton(() => ToggleReaction(getIt()));
   getIt.registerLazySingleton(() => WatchMessages(getIt()));
+  getIt.registerLazySingleton(() => WatchReactions(getIt()));
   getIt.registerLazySingleton(() => GetCurrentUserId(getIt()));
 
   getIt.registerFactory(
     () => ChatBloc(
       getMessages: getIt(),
       watchMessages: getIt(),
+      watchReactions: getIt(),
       getCurrentUserId: getIt(),
+      editMessage: getIt(),
+      deleteMessage: getIt(),
+      toggleReaction: getIt(),
       syncService: getIt<SyncService>(),
     ),
   );

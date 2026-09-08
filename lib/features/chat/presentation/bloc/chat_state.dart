@@ -7,6 +7,8 @@ class ChatState extends Equatable {
     this.status = ChatStatus.initial,
     this.messages = const [],
     this.currentUserId,
+    this.replyingTo,
+    this.editing,
     this.hasReachedMax = false,
     this.isLoadingMore = false,
     this.errorMessage,
@@ -17,6 +19,13 @@ class ChatState extends Equatable {
   /// Newest-first (index 0 = newest); the page renders this in a reversed list.
   final List<ChatMessage> messages;
   final String? currentUserId;
+
+  /// The message the composer is replying to, if any.
+  final ChatMessage? replyingTo;
+
+  /// The message the composer is editing, if any.
+  final ChatMessage? editing;
+
   final bool hasReachedMax;
   final bool isLoadingMore;
   final String? errorMessage;
@@ -27,6 +36,9 @@ class ChatState extends Equatable {
     ChatStatus? status,
     List<ChatMessage>? messages,
     String? currentUserId,
+    ChatMessage? replyingTo,
+    ChatMessage? editing,
+    bool clearComposerTarget = false,
     bool? hasReachedMax,
     bool? isLoadingMore,
     String? errorMessage,
@@ -36,6 +48,8 @@ class ChatState extends Equatable {
       status: status ?? this.status,
       messages: messages ?? this.messages,
       currentUserId: currentUserId ?? this.currentUserId,
+      replyingTo: clearComposerTarget ? null : (replyingTo ?? this.replyingTo),
+      editing: clearComposerTarget ? null : (editing ?? this.editing),
       hasReachedMax: hasReachedMax ?? this.hasReachedMax,
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
@@ -47,6 +61,8 @@ class ChatState extends Equatable {
         status,
         messages,
         currentUserId,
+        replyingTo,
+        editing,
         hasReachedMax,
         isLoadingMore,
         errorMessage,

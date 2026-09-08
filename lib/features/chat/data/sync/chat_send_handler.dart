@@ -12,6 +12,7 @@ class ChatSendHandler implements OutboxHandler {
   static const String kType = 'chat.send';
   static const String kRoom = 'room';
   static const String kContent = 'content';
+  static const String kReplyToId = 'reply_to_id';
 
   @override
   String get type => kType;
@@ -21,6 +22,7 @@ class ChatSendHandler implements OutboxHandler {
     final result = await _repository.sendMessage(
       room: payload[kRoom] as String,
       content: payload[kContent] as String,
+      replyToId: payload[kReplyToId] as String?,
     );
     return result.fold(
       (failure) =>
