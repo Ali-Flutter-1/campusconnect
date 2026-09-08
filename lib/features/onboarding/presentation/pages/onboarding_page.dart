@@ -26,7 +26,7 @@ class OnboardingPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const Spacer(),
-                const BrandMark()
+                const BrandMark(variant: BrandVariant.bubbleNode)
                     .animate()
                     .scale(duration: 500.ms, curve: Curves.easeOutBack)
                     .fadeIn(),

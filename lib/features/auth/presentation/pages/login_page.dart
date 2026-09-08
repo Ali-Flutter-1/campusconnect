@@ -142,7 +142,7 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        const BrandMark(size: 72),
+        const BrandMark(size: 72, variant: BrandVariant.cMark),
         const SizedBox(height: AppSpacing.md),
         const BrandWordmark(fontSize: 26),
         const SizedBox(height: AppSpacing.sm),

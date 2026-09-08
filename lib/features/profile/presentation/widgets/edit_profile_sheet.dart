@@ -5,7 +5,8 @@ import '../../../../core/theme/app_surfaces.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_text_field.dart';
-import '../../../../core/widgets/image_picker_field.dart';
+import '../../../../core/services/image_picking.dart';
+import '../../../../core/widgets/avatar_picker_field.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 
 /// Admin/student profile editor — updates name, course, department and year via
@@ -101,17 +102,17 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
               ),
             ),
             const SizedBox(height: AppSpacing.lg),
-            Text(
-              'Profile photo',
-              style: AppTypography.inter(
-                size: AppTypography.sm,
-                weight: AppTypography.medium,
-                color: surfaces.secondaryText,
+            BlocBuilder<AuthBloc, AuthState>(
+              buildWhen: (p, c) =>
+                  p.isSubmitting != c.isSubmitting || p.user != c.user,
+              builder: (context, state) => AvatarPickerField(
+                name: state.user?.displayName ?? '',
+                currentImageUrl: state.user?.avatarUrl,
+                enabled: !state.isSubmitting,
+                onChanged: (img) => _avatar = img,
               ),
             ),
-            const SizedBox(height: AppSpacing.xs),
-            ImagePickerField(onChanged: (img) => _avatar = img),
-            const SizedBox(height: AppSpacing.md),
+            const SizedBox(height: AppSpacing.lg),
             AppTextField(controller: _name, label: 'Full name', hint: 'Your name'),
             const SizedBox(height: AppSpacing.md),
             AppTextField(

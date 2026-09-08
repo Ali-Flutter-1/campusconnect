@@ -1,25 +1,21 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import '../services/image_picking.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_radius.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_surfaces.dart';
 import '../theme/app_typography.dart';
+import 'image_source_sheet.dart';
 
-/// An image chosen by the user, ready to upload.
-class PickedImage {
-  const PickedImage({required this.bytes, required this.ext});
-  final Uint8List bytes;
-  final String ext;
-}
+export '../services/image_picking.dart' show PickedImage;
 
-/// A tappable field that lets an admin attach an optional image. Shows an
-/// "Add image" prompt, then a preview with a remove button once picked.
-/// Reports the selection via [onChanged].
+/// A tappable field that lets an admin attach an optional image, from the
+/// camera or the gallery. Shows an "Add image" prompt, then a preview with a
+/// remove button once picked. Reports the selection via [onChanged].
 class ImagePickerField extends StatefulWidget {
   const ImagePickerField({super.key, required this.onChanged});
 
@@ -30,36 +26,30 @@ class ImagePickerField extends StatefulWidget {
 }
 
 class _ImagePickerFieldState extends State<ImagePickerField> {
-  final _picker = ImagePicker();
   Uint8List? _preview;
   bool _loading = false;
 
   Future<void> _pick() async {
     if (_loading) return;
+    final choice = await showImageSourceSheet(context, title: 'Add an image');
+    if (choice?.pickSource == null || !mounted) return;
+
+    // Reading/decoding the picked file can take a beat — show a spinner.
+    setState(() => _loading = true);
     try {
-      final file = await _picker.pickImage(
-        source: ImageSource.gallery,
-        maxWidth: 1600,
-        imageQuality: 80,
-      );
-      if (file == null) return;
-      // Reading/decoding the picked file can take a beat — show a spinner.
-      if (mounted) setState(() => _loading = true);
-      final bytes = await file.readAsBytes();
-      final ext = file.name.contains('.') ? file.name.split('.').last : 'jpg';
+      final picked = await pickImage(choice!.pickSource!);
       if (!mounted) return;
       setState(() {
-        _preview = bytes;
         _loading = false;
+        if (picked != null) _preview = picked.bytes;
       });
-      widget.onChanged(PickedImage(bytes: bytes, ext: ext));
-    } catch (_) {
-      if (mounted) {
-        setState(() => _loading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not pick image.')),
-        );
-      }
+      if (picked != null) widget.onChanged(picked);
+    } on ImagePickException catch (e) {
+      if (!mounted) return;
+      setState(() => _loading = false);
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(e.message)));
     }
   }
 

@@ -1,46 +1,66 @@
 import 'package:flutter/material.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 
-/// The CampusConnect app mark: a frosted rounded tile holding a gradient
-/// check-circle, as in the splash mockup.
+/// The three brand marks that ship with the app. [appIcon] is the launcher
+/// icon, so it is the one to use anywhere the app identifies itself; the other
+/// two are alternates for surfaces that would otherwise repeat it.
+enum BrandVariant {
+  /// Network-and-bubble mark — matches the installed launcher icon.
+  appIcon('assets/images/app_icon.png'),
+
+  /// Monogram "C" built from concentric arcs.
+  cMark('assets/images/logo_c_mark.png'),
+
+  /// Enclosing "C" holding two chat bubbles.
+  bubbleNode('assets/images/logo_bubble_node.png');
+
+  const BrandVariant(this.asset);
+
+  final String asset;
+}
+
+/// The CampusConnect app mark: the brand logo in a frosted rounded tile.
+///
+/// The artwork carries its own deep-navy ground, so the tile is clipped to the
+/// same rounded-square silhouette as the launcher icon and reads as an app tile
+/// on both light and dark surfaces.
 class BrandMark extends StatelessWidget {
-  const BrandMark({super.key, this.size = 96});
+  const BrandMark({
+    super.key,
+    this.size = 96,
+    this.variant = BrandVariant.appIcon,
+  });
 
   final double size;
+  final BrandVariant variant;
 
   @override
   Widget build(BuildContext context) {
+    final radius = BorderRadius.circular(size * 0.28);
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: AppColors.white.withValues(alpha: 0.06),
-        borderRadius: BorderRadius.circular(size * 0.28),
+        borderRadius: radius,
         border: Border.all(color: AppColors.white.withValues(alpha: 0.08)),
-      ),
-      child: Center(
-        child: Container(
-          width: size * 0.6,
-          height: size * 0.6,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [AppColors.accent.s400, AppColors.primary.s500],
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primary.s500.withValues(alpha: 0.4),
-                blurRadius: 24,
-                spreadRadius: 2,
-              ),
-            ],
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.s500.withValues(alpha: 0.35),
+            blurRadius: size * 0.25,
+            spreadRadius: 1,
           ),
-          child: Icon(LucideIcons.check, color: AppColors.white, size: size * 0.3),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: radius,
+        child: Image.asset(
+          variant.asset,
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+          filterQuality: FilterQuality.medium,
         ),
       ),
     );

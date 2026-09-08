@@ -106,53 +106,56 @@ class _Header extends StatelessWidget {
 
     return Column(
       children: [
-        Stack(
-          alignment: Alignment.center,
-          children: [
-            AvatarCircle(
-              name: user.displayName,
-              imageUrl: user.avatarUrl,
-              size: 92,
-              loadingPlaceholder: true,
-            ),
-            // Upload-in-progress overlay.
-            if (saving)
-              Container(
-                width: 92,
-                height: 92,
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.45),
-                  shape: BoxShape.circle,
+        GestureDetector(
+          onTap: saving ? null : () => EditProfileSheet.show(context),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              AvatarCircle(
+                name: user.displayName,
+                imageUrl: user.avatarUrl,
+                size: 92,
+                loadingPlaceholder: true,
+              ),
+              // Upload-in-progress overlay.
+              if (saving)
+                Container(
+                  width: 92,
+                  height: 92,
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.45),
+                    shape: BoxShape.circle,
+                  ),
+                  alignment: Alignment.center,
+                  child: const SizedBox(
+                    width: 26,
+                    height: 26,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      valueColor:
+                          AlwaysStoppedAnimation<Color>(AppColors.white),
+                    ),
+                  ),
                 ),
-                alignment: Alignment.center,
-                child: const SizedBox(
-                  width: 26,
-                  height: 26,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2.5,
-                    valueColor:
-                        AlwaysStoppedAnimation<Color>(AppColors.white),
+              Positioned(
+                right: 0,
+                bottom: 0,
+                child: Material(
+                  color: AppColors.primary.s500,
+                  shape: const CircleBorder(),
+                  child: InkWell(
+                    onTap: saving ? null : () => EditProfileSheet.show(context),
+                    customBorder: const CircleBorder(),
+                    child: const Padding(
+                      padding: EdgeInsets.all(7),
+                      child: Icon(LucideIcons.pencil,
+                          size: 14, color: AppColors.white),
+                    ),
                   ),
                 ),
               ),
-            Positioned(
-              right: 0,
-              bottom: 0,
-              child: Material(
-                color: AppColors.primary.s500,
-                shape: const CircleBorder(),
-                child: InkWell(
-                  onTap: saving ? null : () => EditProfileSheet.show(context),
-                  customBorder: const CircleBorder(),
-                  child: const Padding(
-                    padding: EdgeInsets.all(7),
-                    child: Icon(LucideIcons.pencil,
-                        size: 14, color: AppColors.white),
-                  ),
-                ),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
         const SizedBox(height: AppSpacing.md),
         Text(
