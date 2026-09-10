@@ -9,6 +9,7 @@ import '../../../../core/theme/app_surfaces.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../domain/entities/chat_message.dart';
 import 'chat_emojis.dart';
+import 'emoji_picker_sheet.dart';
 
 /// What the user picked in the long-press sheet. [react] carries the chosen
 /// emoji in [MessageAction.emoji].
@@ -77,19 +78,39 @@ class _MessageActionsSheet extends StatelessWidget {
                   horizontal: AppSpacing.md,
                   vertical: AppSpacing.md,
                 ),
-                child: Row(
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final slots = kQuickReactions.length + 1; // + the "more" cell
+                    final cell =
+                        (constraints.maxWidth / slots).clamp(32.0, 44.0);
+                    return Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     for (final emoji in kQuickReactions)
                       _EmojiButton(
                         emoji: emoji,
+                        size: cell,
                         selected: message.hasReaction(emoji, currentUserId),
                         onTap: () => Navigator.pop(
                           context,
                           MessageAction(MessageActionKind.react, emoji: emoji),
                         ),
                       ),
-                  ],
+                    _MoreEmojiButton(
+                      size: cell,
+                      onPicked: (emoji) => Navigator.pop(
+                        context,
+                        MessageAction(MessageActionKind.react, emoji: emoji),
+                      ),
+                      // Highlight the user's own reactions in the full picker.
+                      selected: {
+                        for (final entry in message.reactions.entries)
+                          if (entry.value.contains(currentUserId)) entry.key,
+                      },
+                    ),
+                      ],
+                    );
+                  },
                 ),
               ),
               Divider(height: 1, color: surfaces.divider),
@@ -154,19 +175,21 @@ class _EmojiButton extends StatelessWidget {
     required this.emoji,
     required this.selected,
     required this.onTap,
+    this.size = 44,
   });
 
   final String emoji;
   final bool selected;
   final VoidCallback onTap;
+  final double size;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 44,
-        height: 44,
+        width: size,
+        height: size,
         alignment: Alignment.center,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
@@ -174,7 +197,46 @@ class _EmojiButton extends StatelessWidget {
               ? AppColors.primary.s500.withValues(alpha: 0.18)
               : Colors.transparent,
         ),
-        child: Text(emoji, style: const TextStyle(fontSize: 24)),
+        child: Text(emoji, style: TextStyle(fontSize: size * 0.55)),
+      ),
+    );
+  }
+}
+
+/// Opens the full emoji palette and hands the pick back to the action sheet.
+class _MoreEmojiButton extends StatelessWidget {
+  const _MoreEmojiButton({
+    required this.onPicked,
+    required this.selected,
+    this.size = 44,
+  });
+
+  final ValueChanged<String> onPicked;
+  final Set<String> selected;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final surfaces = context.surfaces;
+    return GestureDetector(
+      onTap: () async {
+        final emoji = await showEmojiPickerSheet(context, selected: selected);
+        if (emoji != null) onPicked(emoji);
+      },
+      child: Container(
+        width: size,
+        height: size,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: surfaces.cardBackground,
+          border: Border.all(color: surfaces.cardBorder),
+        ),
+        child: Icon(
+          LucideIcons.plus,
+          size: size * 0.45,
+          color: surfaces.secondaryText,
+        ),
       ),
     );
   }
