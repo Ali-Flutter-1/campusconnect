@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_surfaces.dart';
 import '../../../../core/theme/app_typography.dart';
@@ -148,13 +147,13 @@ class _CreatePollSheetState extends State<CreatePollSheet> {
                   child: TextButton.icon(
                     onPressed: _addOption,
                     icon: Icon(LucideIcons.plus,
-                        size: 16, color: AppColors.primary.s400),
+                        size: 16, color: context.surfaces.accentText),
                     label: Text(
                       'Add option',
                       style: AppTypography.inter(
                         size: AppTypography.sm,
                         weight: AppTypography.medium,
-                        color: AppColors.primary.s400,
+                        color: context.surfaces.accentText,
                       ),
                     ),
                   ),

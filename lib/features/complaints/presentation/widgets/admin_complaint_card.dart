@@ -90,7 +90,7 @@ class AdminComplaintCard extends StatelessWidget {
                   style: AppTypography.inter(
                     size: AppTypography.xs,
                     weight: AppTypography.bold,
-                    color: color.s400,
+                    color: color.onSurface(context),
                     letterSpacing: 0.5,
                   ),
                 ),
@@ -224,14 +224,14 @@ class _ClosedNote extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 15, color: color.s400),
+        Icon(icon, size: 15, color: color.onSurface(context)),
         const SizedBox(width: 6),
         Text(
           label,
           style: AppTypography.inter(
             size: AppTypography.sm,
             weight: AppTypography.semiBold,
-            color: color.s400,
+            color: color.onSurface(context),
           ),
         ),
       ],
@@ -265,14 +265,14 @@ class _ActionButton extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 15, color: color.s400),
+              Icon(icon, size: 15, color: color.onSurface(context)),
               const SizedBox(width: 6),
               Text(
                 label,
                 style: AppTypography.inter(
                   size: AppTypography.sm,
                   weight: AppTypography.semiBold,
-                  color: color.s400,
+                  color: color.onSurface(context),
                 ),
               ),
             ],

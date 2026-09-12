@@ -137,7 +137,7 @@ class _ChatViewState extends State<_ChatView> {
             onPressed: () => Navigator.pop(context, true),
             child: Text(
               'Delete',
-              style: TextStyle(color: AppColors.error.s400),
+              style: TextStyle(color: context.surfaces.dangerText),
             ),
           ),
         ],
@@ -302,7 +302,7 @@ class _ChatHeader extends StatelessWidget {
                   style: AppTypography.inter(
                     size: AppTypography.sm,
                     weight: AppTypography.semiBold,
-                    color: AppColors.success.s400,
+                    color: AppColors.success.s600,
                   ),
                 ),
               ],

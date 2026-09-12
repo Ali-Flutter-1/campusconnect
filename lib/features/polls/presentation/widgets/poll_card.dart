@@ -35,7 +35,7 @@ class PollCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(LucideIcons.barChart3, size: 16, color: AppColors.primary.s400),
+              Icon(LucideIcons.barChart3, size: 16, color: context.surfaces.accentText),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text(
@@ -130,7 +130,7 @@ class _OptionBar extends StatelessWidget {
                 children: [
                   if (isMine) ...[
                     Icon(LucideIcons.checkCircle2,
-                        size: 14, color: AppColors.primary.s300),
+                        size: 14, color: AppColors.primary.onSurface(context)),
                     const SizedBox(width: 6),
                   ],
                   Expanded(

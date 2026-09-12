@@ -6,8 +6,8 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../../../../core/animations/fade_slide_in.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/utils/validators.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/theme/app_surfaces.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_text_field.dart';
@@ -116,7 +116,7 @@ class _LoginPageState extends State<LoginPage> {
                               style: AppTypography.inter(
                                 size: AppTypography.base,
                                 weight: AppTypography.medium,
-                                color: AppColors.primary.s400,
+                                color: context.surfaces.accentText,
                               ),
                             ),
                           ),
@@ -150,7 +150,7 @@ class _Header extends StatelessWidget {
           'Sign in to your campus account',
           style: AppTypography.inter(
             size: AppTypography.base,
-            color: AppColors.secondary.s300,
+            color: context.surfaces.secondaryText,
           ),
         ),
       ],

@@ -77,7 +77,7 @@ class MessageBubble extends StatelessWidget {
                 style: AppTypography.inter(
                   size: AppTypography.xs,
                   weight: AppTypography.semiBold,
-                  color: AppColors.primary.s400,
+                  color: surfaces.accentText,
                 ),
               ),
             if (!isMine) const SizedBox(height: 2),

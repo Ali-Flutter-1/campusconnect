@@ -60,14 +60,14 @@ class NoticeCard extends StatelessWidget {
                   style: AppTypography.inter(
                     size: AppTypography.xs,
                     weight: AppTypography.semiBold,
-                    color: color.s400,
+                    color: color.onSurface(context),
                     letterSpacing: 0.5,
                   ),
                 ),
               ),
               if (notice.isPinned) ...[
                 const SizedBox(width: AppSpacing.sm),
-                Icon(LucideIcons.pin, size: 13, color: AppColors.warning.s400),
+                Icon(LucideIcons.pin, size: 13, color: context.surfaces.warningText),
               ],
               const Spacer(),
               Text(

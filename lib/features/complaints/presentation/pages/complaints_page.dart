@@ -198,7 +198,7 @@ class _StatCard extends StatelessWidget {
               style: AppTypography.inter(
                 size: AppTypography.xxl,
                 weight: AppTypography.bold,
-                color: color.s400,
+                color: color.onSurface(context),
               ),
             ),
             const SizedBox(height: 2),

@@ -44,7 +44,7 @@ class ReplyQuote extends StatelessWidget {
   Widget build(BuildContext context) {
     final surfaces = context.surfaces;
     final accent =
-        onPrimary ? AppColors.white.withValues(alpha: 0.9) : AppColors.primary.s400;
+        onPrimary ? AppColors.white.withValues(alpha: 0.9) : surfaces.accentText;
     final body = onPrimary
         ? AppColors.white.withValues(alpha: 0.75)
         : surfaces.secondaryText;

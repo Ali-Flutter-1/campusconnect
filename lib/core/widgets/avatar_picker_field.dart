@@ -156,7 +156,7 @@ class _AvatarPickerFieldState extends State<AvatarPickerField> {
             size: AppTypography.sm,
             weight: AppTypography.medium,
             color: _preview != null
-                ? AppColors.primary.s400
+                ? surfaces.accentText
                 : surfaces.secondaryText,
           ),
         ),

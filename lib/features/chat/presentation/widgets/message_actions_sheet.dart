@@ -258,7 +258,7 @@ class _ActionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color =
-        destructive ? AppColors.error.s400 : context.surfaces.primaryText;
+        destructive ? context.surfaces.dangerText : context.surfaces.primaryText;
     return InkWell(
       onTap: onTap,
       child: Padding(

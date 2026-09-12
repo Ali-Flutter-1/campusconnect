@@ -172,11 +172,6 @@ class _Header extends StatelessWidget {
               ],
             ),
           ),
-          IconButton(
-            onPressed: () => context.push(AppRoutes.notifications),
-            icon: Icon(LucideIcons.bell, color: surfaces.primaryText),
-          ),
-          const SizedBox(width: AppSpacing.sm),
           AvatarCircle(name: name, imageUrl: avatarUrl, size: 40),
         ],
       ),
@@ -247,7 +242,7 @@ class _QuickActionTile extends StatelessWidget {
               color: action.color.s500.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
-            child: Icon(action.icon, color: action.color.s400, size: 20),
+            child: Icon(action.icon, color: action.color.onSurface(context), size: 20),
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
@@ -289,7 +284,7 @@ class _SectionHeader extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(icon, size: 18, color: AppColors.primary.s400),
+          Icon(icon, size: 18, color: context.surfaces.accentText),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
@@ -308,7 +303,7 @@ class _SectionHeader extends StatelessWidget {
               style: AppTypography.inter(
                 size: AppTypography.sm,
                 weight: AppTypography.medium,
-                color: AppColors.primary.s400,
+                color: context.surfaces.accentText,
               ),
             ),
           ),

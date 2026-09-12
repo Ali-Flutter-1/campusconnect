@@ -38,6 +38,7 @@ class AdminDashboardPage extends StatelessWidget {
         label: 'Events',
         subtitle: 'Manage events',
         route: AppRoutes.events,
+        isTab: true,
         color: AppColors.accent,
       ),
       const _AdminAction(
@@ -52,6 +53,7 @@ class AdminDashboardPage extends StatelessWidget {
         label: 'Notices',
         subtitle: 'Post notices',
         route: AppRoutes.notices,
+        isTab: true,
         color: AppColors.warning,
       ),
       const _AdminAction(
@@ -110,7 +112,14 @@ class AdminDashboardPage extends StatelessWidget {
                 childAspectRatio: 1.3,
                 children: [
                   for (final a in actions)
-                    _ActionTile(action: a, onTap: () => context.push(a.route)),
+                    _ActionTile(
+                      action: a,
+                      // Tab destinations switch branches (keeping the bottom
+                      // bar in sync); true stack routes push over the shell.
+                      onTap: () => a.isTab
+                          ? context.go(a.route)
+                          : context.push(a.route),
+                    ),
                 ],
               ),
             ),
@@ -128,6 +137,7 @@ class _AdminAction {
     required this.subtitle,
     required this.route,
     required this.color,
+    this.isTab = false,
   });
 
   final IconData icon;
@@ -135,6 +145,10 @@ class _AdminAction {
   final String subtitle;
   final String route;
   final ColorRamp color;
+
+  /// True when [route] is one of the shell's bottom-tab branches, which must be
+  /// switched to rather than pushed (a pushed branch has no back affordance).
+  final bool isTab;
 }
 
 class _ActionTile extends StatelessWidget {

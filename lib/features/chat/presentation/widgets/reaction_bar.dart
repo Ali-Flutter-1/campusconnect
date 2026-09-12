@@ -75,7 +75,7 @@ class _Chip extends StatelessWidget {
               : surfaces.cardBackground,
           borderRadius: BorderRadius.circular(AppRadius.full),
           border: Border.all(
-            color: mine ? AppColors.primary.s400 : surfaces.cardBorder,
+            color: mine ? surfaces.accentText : surfaces.cardBorder,
           ),
         ),
         child: Row(
@@ -88,7 +88,7 @@ class _Chip extends StatelessWidget {
               style: AppTypography.inter(
                 size: AppTypography.xs,
                 weight: mine ? AppTypography.semiBold : AppTypography.regular,
-                color: mine ? AppColors.primary.s400 : surfaces.secondaryText,
+                color: mine ? surfaces.accentText : surfaces.secondaryText,
               ),
             ),
           ],

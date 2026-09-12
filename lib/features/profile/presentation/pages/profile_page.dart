@@ -55,17 +55,17 @@ class ProfilePage extends StatelessWidget {
                       _MenuRow(
                         icon: LucideIcons.settings,
                         label: 'Settings',
-                        onTap: () => _soon(context),
+                        onTap: () => context.push(AppRoutes.settings),
                       ),
                       _MenuRow(
                         icon: LucideIcons.shield,
                         label: 'Privacy',
-                        onTap: () => _soon(context),
+                        onTap: () => context.push(AppRoutes.privacy),
                       ),
                       _MenuRow(
                         icon: LucideIcons.helpCircle,
                         label: 'Help & Support',
-                        onTap: () => _soon(context),
+                        onTap: () => context.push(AppRoutes.help),
                       ),
                     ],
                   ),
@@ -81,12 +81,6 @@ class ProfilePage extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  void _soon(BuildContext context) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(const SnackBar(content: Text('Coming soon')));
   }
 }
 
@@ -360,14 +354,14 @@ class _LogoutButton extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(LucideIcons.logOut, size: 18, color: AppColors.error.s400),
+              Icon(LucideIcons.logOut, size: 18, color: context.surfaces.dangerText),
               const SizedBox(width: AppSpacing.sm),
               Text(
                 'Logout',
                 style: AppTypography.inter(
                   size: AppTypography.base,
                   weight: AppTypography.semiBold,
-                  color: AppColors.error.s400,
+                  color: context.surfaces.dangerText,
                 ),
               ),
             ],

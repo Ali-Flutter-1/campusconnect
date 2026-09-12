@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
+import '../theme/app_surfaces.dart';
 import 'brand.dart';
 
 /// Branded loading screen shown while the initial session check runs (auth
@@ -27,7 +27,7 @@ class SplashPage extends StatelessWidget {
                 child: CircularProgressIndicator(
                   strokeWidth: 2.5,
                   valueColor:
-                      AlwaysStoppedAnimation<Color>(AppColors.primary.s400),
+                      AlwaysStoppedAnimation<Color>(context.surfaces.accentText),
                 ),
               ),
             ],

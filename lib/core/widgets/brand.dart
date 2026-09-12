@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
+import '../theme/app_surfaces.dart';
 import '../theme/app_typography.dart';
 
 /// The three brand marks that ship with the app. [appIcon] is the launcher
@@ -39,17 +40,23 @@ class BrandMark extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final radius = BorderRadius.circular(size * 0.28);
+    final isDark = context.isDark;
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
         borderRadius: radius,
-        border: Border.all(color: AppColors.white.withValues(alpha: 0.08)),
+        border: Border.all(color: Colors.black.withValues(alpha: 0.06)),
+        // A colored glow reads as a highlight against navy but looks dated on
+        // white, where a plain drop shadow lifts the tile instead.
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.s500.withValues(alpha: 0.35),
-            blurRadius: size * 0.25,
-            spreadRadius: 1,
+            color: isDark
+                ? AppColors.primary.s500.withValues(alpha: 0.35)
+                : Colors.black.withValues(alpha: 0.12),
+            blurRadius: size * (isDark ? 0.25 : 0.18),
+            offset: Offset(0, isDark ? 0 : size * 0.04),
+            spreadRadius: isDark ? 1 : 0,
           ),
         ],
       ),
@@ -83,7 +90,7 @@ class BrandWordmark extends StatelessWidget {
             style: AppTypography.inter(
               size: fontSize,
               weight: AppTypography.bold,
-              color: AppColors.white,
+              color: context.surfaces.primaryText,
             ),
           ),
           TextSpan(
@@ -91,7 +98,7 @@ class BrandWordmark extends StatelessWidget {
             style: AppTypography.inter(
               size: fontSize,
               weight: AppTypography.bold,
-              color: AppColors.primary.s400,
+              color: context.surfaces.accentText,
             ),
           ),
         ],
@@ -118,9 +125,9 @@ class BrandGradient extends StatelessWidget {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Color(0xFF111E3A), // deep navy
-            Color(0xFF0B1326),
-            Color(0xFF0F172A), // secondary[900]
+            Color(0xFFEFF4FF), // faint primary tint
+            Color(0xFFF7F9FC),
+            Color(0xFFFAFAFA), // neutral[50] — the scaffold color
           ],
         ),
       ),

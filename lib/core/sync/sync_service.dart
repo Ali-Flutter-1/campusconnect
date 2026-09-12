@@ -45,6 +45,10 @@ class SyncService {
   /// Pending entries of [type] (e.g. to restore unsent chat messages on open).
   List<OutboxEntry> pending(String type) => _store.byType(type);
 
+  /// Everything still queued, across every type — what Settings reports as
+  /// "waiting to upload".
+  List<OutboxEntry> get pendingAll => _store.all();
+
   /// Queue a write and attempt to flush immediately. Returns the entry id so the
   /// caller can match it back to its optimistic UI. Pass [id] to reuse a client
   /// id you already showed in the UI.

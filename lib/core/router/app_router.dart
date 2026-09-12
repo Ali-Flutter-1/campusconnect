@@ -13,6 +13,9 @@ import '../../features/events/presentation/pages/events_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/notices/presentation/pages/notices_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
+import '../../features/settings/presentation/pages/help_support_page.dart';
+import '../../features/settings/presentation/pages/privacy_page.dart';
+import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/polls/presentation/pages/polls_page.dart';
 import '../../features/auth/presentation/bloc/auth_bloc.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
@@ -44,6 +47,9 @@ abstract final class AppRoutes {
   static const notifications = '/notifications';
   static const complaints = '/complaints';
   static const approvals = '/approvals';
+  static const settings = '/settings';
+  static const privacy = '/privacy';
+  static const help = '/help';
 }
 
 final _rootKey = GlobalKey<NavigatorState>();
@@ -174,6 +180,24 @@ final GoRouter appRouter = GoRouter(
       pageBuilder: (context, state) =>
           buildFadeSlidePage(state: state, child: const AdminApprovalsPage()),
     ),
+    GoRoute(
+      path: AppRoutes.settings,
+      parentNavigatorKey: _rootKey,
+      pageBuilder: (context, state) =>
+          buildFadeSlidePage(state: state, child: const SettingsPage()),
+    ),
+    GoRoute(
+      path: AppRoutes.privacy,
+      parentNavigatorKey: _rootKey,
+      pageBuilder: (context, state) =>
+          buildFadeSlidePage(state: state, child: const PrivacyPage()),
+    ),
+    GoRoute(
+      path: AppRoutes.help,
+      parentNavigatorKey: _rootKey,
+      pageBuilder: (context, state) =>
+          buildFadeSlidePage(state: state, child: const HelpSupportPage()),
+    ),
   ],
 );
 
@@ -212,8 +236,11 @@ String? _guard(BuildContext context, GoRouterState state) {
         AppRoutes.register,
       };
       if (preAuth.contains(loc)) return landing;
-      // Students may not access the admin dashboard.
-      if (loc == AppRoutes.adminDashboard && !isAdmin) return AppRoutes.home;
+      // Students may not access admin-only destinations. Approvals is a stack
+      // route rather than a tab, so it needs the same guard as the dashboard —
+      // storage RLS blocks the data either way, but the screen should not open.
+      const adminOnly = {AppRoutes.adminDashboard, AppRoutes.approvals};
+      if (adminOnly.contains(loc) && !isAdmin) return AppRoutes.home;
       // Admins shouldn't sit on the student Home feed.
       if (loc == AppRoutes.home && isAdmin) return AppRoutes.adminDashboard;
       return null;

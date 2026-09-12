@@ -79,7 +79,7 @@ class ComplaintCard extends StatelessWidget {
                   style: AppTypography.inter(
                     size: AppTypography.xs,
                     weight: AppTypography.bold,
-                    color: color.s400,
+                    color: color.onSurface(context),
                     letterSpacing: 0.5,
                   ),
                 ),

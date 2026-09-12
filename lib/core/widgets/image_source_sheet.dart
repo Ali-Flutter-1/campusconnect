@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../services/image_picking.dart';
-import '../theme/app_colors.dart';
 import '../theme/app_radius.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_surfaces.dart';
@@ -105,7 +104,7 @@ class _SourceTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color =
-        destructive ? AppColors.error.s400 : context.surfaces.primaryText;
+        destructive ? context.surfaces.dangerText : context.surfaces.primaryText;
     return InkWell(
       onTap: onTap,
       child: Padding(

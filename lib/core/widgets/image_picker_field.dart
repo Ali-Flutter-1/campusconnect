@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../services/image_picking.dart';
-import '../theme/app_colors.dart';
 import '../theme/app_radius.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_surfaces.dart';
@@ -79,7 +78,7 @@ class _ImagePickerFieldState extends State<ImagePickerField> {
               child: CircularProgressIndicator(
                 strokeWidth: 2.5,
                 valueColor:
-                    AlwaysStoppedAnimation<Color>(AppColors.primary.s400),
+                    AlwaysStoppedAnimation<Color>(surfaces.accentText),
               ),
             ),
             const SizedBox(height: AppSpacing.sm),
@@ -140,7 +139,7 @@ class _ImagePickerFieldState extends State<ImagePickerField> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(LucideIcons.imagePlus, color: AppColors.primary.s400),
+            Icon(LucideIcons.imagePlus, color: surfaces.accentText),
             const SizedBox(height: AppSpacing.xs),
             Text(
               'Add image (optional)',

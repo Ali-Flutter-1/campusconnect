@@ -6,6 +6,7 @@ import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/theme/app_surfaces.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/brand.dart';
 
@@ -41,7 +42,7 @@ class OnboardingPage extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: AppTypography.inter(
                     size: AppTypography.md,
-                    color: AppColors.secondary.s300,
+                    color: context.surfaces.secondaryText,
                     height: 1.5,
                   ),
                 ).animate(delay: 300.ms).fadeIn(duration: 400.ms),
@@ -115,14 +116,16 @@ class _PillButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(AppRadius.full),
             border: filled
                 ? null
-                : Border.all(color: AppColors.white.withValues(alpha: 0.3)),
+                : Border.all(color: AppColors.primary.s500),
           ),
           child: Text(
             label,
             style: AppTypography.inter(
               size: AppTypography.base,
               weight: AppTypography.bold,
-              color: AppColors.white,
+              // The filled variant keeps white on primary; the outlined one
+              // needs the primary color to read on the light ground.
+              color: filled ? AppColors.white : AppColors.primary.s600,
               letterSpacing: 0.5,
             ),
           ),

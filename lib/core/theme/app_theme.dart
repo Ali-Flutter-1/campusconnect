@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'app_colors.dart';
@@ -55,6 +56,9 @@ abstract final class AppTheme {
       extensions: [surfaces],
       appBarTheme: AppBarTheme(
         backgroundColor: scaffold,
+        systemOverlayStyle: brightness == Brightness.light
+            ? SystemUiOverlayStyle.dark
+            : SystemUiOverlayStyle.light,
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
