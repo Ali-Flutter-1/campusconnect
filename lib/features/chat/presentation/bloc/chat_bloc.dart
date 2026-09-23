@@ -77,22 +77,9 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       currentUserId: _getCurrentUserId(),
     ));
 
-    final result = await _getMessages(GetMessagesParams(room: _room));
-    result.fold(
-      (failure) => emit(state.copyWith(
-        status: ChatStatus.failure,
-        errorMessage: failure.message,
-      )),
-      // Stored newest-first (index 0 = newest); rendered in a reversed list.
-      // Prepend any still-queued offline messages so they survive a restart.
-      (messages) => emit(state.copyWith(
-        status: ChatStatus.success,
-        messages: [..._pendingMessages(), ...messages],
-        hasReachedMax: messages.length < AppConstants.pageSize,
-        clearError: true,
-      )),
-    );
-
+    // Subscribe *before* loading history. Opening the channel afterwards left a
+    // window in which inserts produced no echo — most often the user's own
+    // first message, whose pending clock then never cleared.
     await _sub?.cancel();
     _sub = _watchMessages(_room).listen(
       (change) => add(ChatMessageChanged(change)),
@@ -105,6 +92,34 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     _syncSub = _sync.results
         .where((r) => r.type == ChatSendHandler.kType)
         .listen((r) => add(_ChatSyncResult(r)));
+
+    // Show queued offline messages immediately so they survive a restart.
+    emit(state.copyWith(messages: _pendingMessages()));
+
+    final result = await _getMessages(GetMessagesParams(room: _room));
+    result.fold(
+      (failure) => emit(state.copyWith(
+        status: ChatStatus.failure,
+        errorMessage: failure.message,
+      )),
+      // Stored newest-first (index 0 = newest); rendered in a reversed list.
+      // Merge rather than replace: anything that arrived over the channel while
+      // this page was loading is already in state and must not be dropped.
+      (messages) {
+        final known = {for (final m in state.messages) m.id};
+        final merged = [
+          ...state.messages,
+          ...messages.where((m) => !known.contains(m.id)),
+        ]..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        emit(state.copyWith(
+          status: ChatStatus.success,
+          messages: merged,
+          // Based on the fetched page, not the merged list.
+          hasReachedMax: messages.length < AppConstants.pageSize,
+          clearError: true,
+        ));
+      },
+    );
   }
 
   /// Rebuilds optimistic [ChatMessage]s from any queued (unsent) chat writes for
@@ -127,6 +142,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
           createdAt: e.createdAt,
           replyToId: e.payload[ChatSendHandler.kReplyToId] as String?,
           pending: true,
+          local: true,
         ),
     ];
   }
@@ -152,7 +168,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     // Reconcile: a realtime echo of my own message replaces its pending copy.
     if (incoming.senderId != null && incoming.senderId == state.currentUserId) {
       final i = list.indexWhere(
-        (m) => m.pending && m.content == incoming.content,
+        (m) => m.local && m.content == incoming.content,
       );
       if (i != -1) list.removeAt(i);
     }
@@ -306,6 +322,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
               deleted: replyTo.isDeleted,
             ),
       pending: true,
+      local: true,
     );
     emit(state.copyWith(
       messages: [pending, ...state.messages],
@@ -468,11 +485,14 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       [for (final m in state.messages) m.id == message.id ? message : m];
 
   void _onSyncResult(_ChatSyncResult event, Emitter<ChatState> emit) {
-    if (event.result.outcome != SyncOutcome.fail) return;
-    // The realtime echo handles success; only mark permanent failures here.
+    // The outbox is the authoritative signal that a send landed. Waiting for
+    // the realtime echo instead left the clock showing on a message that had
+    // in fact been delivered, whenever that echo was missed or slow. The row
+    // stays `local` so the echo can still swap in the server copy.
+    final succeeded = event.result.outcome == SyncOutcome.success;
     final list = state.messages
         .map((m) => m.id == event.result.id
-            ? m.copyWith(pending: false, failed: true)
+            ? m.copyWith(pending: false, failed: !succeeded)
             : m)
         .toList();
     emit(state.copyWith(messages: list));

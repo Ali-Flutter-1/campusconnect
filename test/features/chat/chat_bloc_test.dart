@@ -1,4 +1,8 @@
+import 'dart:async';
+
 import 'package:connect/core/error/failures.dart';
+import 'package:connect/core/sync/outbox_handler.dart';
+import 'package:connect/features/chat/data/sync/chat_send_handler.dart';
 import 'package:connect/core/sync/sync_service.dart';
 import 'package:connect/features/chat/domain/entities/chat_change.dart';
 import 'package:connect/features/chat/domain/entities/chat_message.dart';
@@ -34,6 +38,7 @@ void main() {
   late _MockDeleteMessage deleteMessage;
   late _MockToggleReaction toggleReaction;
   late _MockSyncService sync;
+  late StreamController<SyncResult> syncResults;
 
   final mine = ChatMessage(
     id: 'm1',
@@ -61,16 +66,27 @@ void main() {
     deleteMessage = _MockDeleteMessage();
     toggleReaction = _MockToggleReaction();
     sync = _MockSyncService();
+    syncResults = StreamController<SyncResult>.broadcast();
 
     when(() => getCurrentUserId()).thenReturn(uid);
     when(() => getMessages(any())).thenAnswer((_) async => Right([mine]));
     when(() => watchMessages(any())).thenAnswer((_) => const Stream.empty());
     when(() => watchReactions(any())).thenAnswer((_) => const Stream.empty());
     when(() => sync.pending(any())).thenReturn(const []);
-    when(() => sync.results).thenAnswer((_) => const Stream.empty());
+    when(() => sync.results).thenAnswer((_) => syncResults.stream);
     when(() => sync.enqueue(any(), any(), id: any(named: 'id')))
         .thenAnswer((_) async => 'queued');
   });
+
+  tearDown(() => syncResults.close());
+
+  /// Emits the outbox outcome for the queued send with [id].
+  void flush(String id, SyncOutcome outcome) => syncResults.add(SyncResult(
+        id: id,
+        type: ChatSendHandler.kType,
+        payload: const {},
+        outcome: outcome,
+      ));
 
   ChatBloc build() => ChatBloc(
         getMessages: getMessages,
@@ -210,5 +226,62 @@ void main() {
     );
 
     expect(state.messages.last.content, 'hello there');
+  });
+
+  test('a send confirmed by the outbox clears the clock with no echo', () async {
+    // The realtime echo can be missed entirely (the channel is still joining
+    // when the insert lands). The outbox outcome must be enough on its own,
+    // otherwise the message shows "sending" forever despite having been sent.
+    final bloc = await started();
+
+    bloc.add(const ChatSendRequested('hello world'));
+    var state = await bloc.stream.firstWhere((s) => s.messages.length == 2);
+    final queued = state.messages.first;
+    expect(queued.pending, isTrue);
+
+    flush(queued.id, SyncOutcome.success);
+    state = await bloc.stream.firstWhere((s) => !s.messages.first.pending);
+
+    expect(state.messages.first.failed, isFalse);
+    expect(state.messages.first.content, 'hello world');
+    // Still replaceable, so a late echo swaps in the server row.
+    expect(state.messages.first.local, isTrue);
+  });
+
+  test('a late echo replaces the confirmed copy instead of duplicating it',
+      () async {
+    final bloc = await started();
+
+    bloc.add(const ChatSendRequested('hello world'));
+    var state = await bloc.stream.firstWhere((s) => s.messages.length == 2);
+    flush(state.messages.first.id, SyncOutcome.success);
+    await bloc.stream.firstWhere((s) => !s.messages.first.pending);
+
+    bloc.add(ChatMessageChanged(ChatChange.insert(ChatMessage(
+      id: 'server-1',
+      senderId: uid,
+      senderName: 'Me',
+      content: 'hello world',
+      room: 'global',
+      createdAt: DateTime(2026, 1, 1, 12),
+    ))));
+    state = await bloc.stream.firstWhere(
+      (s) => s.messages.any((m) => m.id == 'server-1'),
+    );
+
+    expect(state.messages.where((m) => m.content == 'hello world'), hasLength(1));
+    expect(state.messages.length, 2);
+  });
+
+  test('a permanently failed send is still marked failed', () async {
+    final bloc = await started();
+
+    bloc.add(const ChatSendRequested('nope'));
+    var state = await bloc.stream.firstWhere((s) => s.messages.length == 2);
+
+    flush(state.messages.first.id, SyncOutcome.fail);
+    state = await bloc.stream.firstWhere((s) => s.messages.first.failed);
+
+    expect(state.messages.first.pending, isFalse);
   });
 }

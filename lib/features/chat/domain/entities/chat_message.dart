@@ -38,6 +38,7 @@ class ChatMessage extends Equatable {
     this.reactions = const {},
     this.pending = false,
     this.failed = false,
+    this.local = false,
   });
 
   final String id;
@@ -61,8 +62,17 @@ class ChatMessage extends Equatable {
   /// emoji -> ids of the users who reacted with it.
   final Map<String, List<String>> reactions;
 
+  /// Queued in the outbox, not yet confirmed by the server (shows a clock).
   final bool pending;
+
+  /// The queued send was permanently rejected (shows tap-to-retry).
   final bool failed;
+
+  /// This row was built on the device and has no server id yet, so it must be
+  /// replaced when its realtime echo arrives. It stays true after [pending]
+  /// clears: delivery is confirmed by the outbox, which can land before — or
+  /// instead of — the echo.
+  final bool local;
 
   bool get isEdited => editedAt != null;
   bool get isDeleted => deletedAt != null;
@@ -79,6 +89,7 @@ class ChatMessage extends Equatable {
     Map<String, List<String>>? reactions,
     bool? pending,
     bool? failed,
+    bool? local,
   }) =>
       ChatMessage(
         id: id,
@@ -94,6 +105,7 @@ class ChatMessage extends Equatable {
         reactions: reactions ?? this.reactions,
         pending: pending ?? this.pending,
         failed: failed ?? this.failed,
+        local: local ?? this.local,
       );
 
   @override
@@ -111,5 +123,6 @@ class ChatMessage extends Equatable {
         reactions,
         pending,
         failed,
+        local,
       ];
 }
