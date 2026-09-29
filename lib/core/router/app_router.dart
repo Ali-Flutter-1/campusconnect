@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../features/admin/presentation/pages/admin_dashboard_page.dart';
 import '../../features/announcements/presentation/pages/announcements_page.dart';
