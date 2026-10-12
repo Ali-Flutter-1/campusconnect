@@ -81,6 +81,21 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     String? adminCode,
   }) async {
     try {
+      // Check the admin phrase before creating anything. Otherwise a mistyped
+      // phrase still produced an account — silently as a student — for someone
+      // who had chosen "Admin", with no way to retry.
+      final code = adminCode?.trim();
+      final wantsAdmin = code != null && code.isNotEmpty;
+      if (wantsAdmin) {
+        final ok = await _client.rpc('verify_admin_code', params: {'code': code});
+        if (ok != true) {
+          throw const AuthException(
+            'That admin phrase is not correct. Check the four words and try '
+            'again.',
+          );
+        }
+      }
+
       final res = await _client.auth.signUp(
         email: email,
         password: password,
@@ -102,15 +117,16 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
             ignoreDuplicates: true,
           );
 
-      // If an admin code was supplied, ask the server to promote the user. The
-      // RPC validates the secret; a wrong code simply leaves them a student.
-      final code = adminCode?.trim();
-      if (code != null && code.isNotEmpty) {
+      // The phrase was verified above; now promote the new account. The RPC
+      // re-checks it server-side, so the earlier check is a courtesy only.
+      if (wantsAdmin) {
         await _client.rpc('redeem_admin_code', params: {'code': code});
       }
 
       // Reload so the returned user reflects the role the server actually set.
       return _loadProfile(user.id, user.email);
+    } on AuthException {
+      rethrow;
     } on AuthApiException catch (e) {
       throw AuthException(e.message);
     } catch (_) {

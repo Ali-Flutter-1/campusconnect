@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
@@ -98,7 +99,7 @@ class ReplyQuote extends StatelessWidget {
               behavior: HitTestBehavior.opaque,
               child: Padding(
                 padding: const EdgeInsets.only(left: AppSpacing.sm),
-                child: Icon(Icons.close, size: 16, color: body),
+                child: Icon(LucideIcons.x, size: 16, color: body),
               ),
             ),
         ],

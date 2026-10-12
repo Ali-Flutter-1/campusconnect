@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
@@ -67,7 +68,7 @@ class _EmojiPickerSheet extends StatelessWidget {
                     onTap: () => Navigator.pop(context),
                     behavior: HitTestBehavior.opaque,
                     child: Icon(
-                      Icons.close,
+                      LucideIcons.x,
                       size: 20,
                       color: surfaces.secondaryText,
                     ),

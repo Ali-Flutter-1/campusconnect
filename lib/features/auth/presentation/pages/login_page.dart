@@ -76,7 +76,7 @@ class _LoginPageState extends State<LoginPage> {
                         AppTextField(
                           controller: _email,
                           label: 'Email',
-                          hint: 'you@campus.edu',
+                          hint: Validators.campusEmailHint,
                           icon: LucideIcons.mail,
                           keyboardType: TextInputType.emailAddress,
                           textInputAction: TextInputAction.next,

@@ -103,7 +103,7 @@ class _SignupPageState extends State<SignupPage> {
                       AppTextField(
                         controller: _email,
                         label: 'Email',
-                        hint: 'you@campus.edu',
+                        hint: Validators.campusEmailHint,
                         icon: LucideIcons.mail,
                         keyboardType: TextInputType.emailAddress,
                         textInputAction: TextInputAction.next,
@@ -136,14 +136,14 @@ class _SignupPageState extends State<SignupPage> {
                                     const EdgeInsets.only(top: AppSpacing.md),
                                 child: AppTextField(
                                   controller: _adminCode,
-                                  label: 'Admin access code',
-                                  hint: 'Enter the admin phrase',
+                                  label: 'Admin access phrase',
+                                  hint: 'Four words, separated by spaces',
                                   icon: LucideIcons.shieldCheck,
                                   obscureText: true,
                                   validator: (v) =>
                                       (_role == UserRole.admin &&
                                               (v == null || v.trim().isEmpty))
-                                          ? 'Enter the admin code'
+                                          ? 'Enter the admin phrase'
                                           : null,
                                 ),
                               )

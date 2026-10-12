@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_surfaces.dart';
@@ -177,7 +178,7 @@ class _CreateEventSheetState extends State<CreateEventSheet> {
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: _pickDate,
-                      icon: const Icon(Icons.calendar_today, size: 16),
+                      icon: const Icon(LucideIcons.calendar, size: 16),
                       label: Text(DateFormat('MMM d, yyyy').format(_date)),
                     ),
                   ),

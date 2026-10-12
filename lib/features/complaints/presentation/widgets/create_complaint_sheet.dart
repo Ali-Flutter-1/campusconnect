@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_surfaces.dart';
@@ -147,7 +148,7 @@ class _CreateComplaintSheetState extends State<CreateComplaintSheet> {
               AppButton(
                 label: 'Submit feedback',
                 expand: true,
-                icon: Icons.send,
+                icon: LucideIcons.send,
                 onPressed: _submit,
               ),
             ],
